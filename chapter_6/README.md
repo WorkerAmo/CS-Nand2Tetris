@@ -38,5 +38,85 @@ D=A
 
 
 
-6.1 背景
+## 6.1 背景
+
+机器语言通常以2种形式指定：符号和二进制。
+
+ The binary codes—for example, 110000101000000110000000000000111—represent actual machine instructions, as understood by the underlying hardware. 
+
+例如110000101000000110000000000000111的二进制代码，代表实际的机器指令，可以被底层硬件理解。
+
+
+
+For example, the instruction’s leftmost 8 bits can represent an operation code, say LOAD, the next 8 bits a register, say R3, and the remaining 16 bits an address, say 7. 
+
+例如，指令的最左侧8位可以被理解为操作码，LOAD。后面的8位表示寄存器R3。剩余的16位表示地址，7.
+
+LOAD R3 7
+
+
+
+ Depending on the hardware’s logic design and the agreed-upon machine language, the overall 32-bit pattern can thus cause the hardware to effect the operation “load the contents of Memory[7] into register R3.” 
+
+依赖硬件的逻辑设计和协定的计算机语言。整个32位模式可以导致硬件实现“加载内存地址为7的内容到R3寄存器”操作。
+
+Modern computer platforms support dozens if not hundreds of such elementary operations. 
+
+现代计算机平台支持数十种甚至上百种此类基本操作。
+
+Thus, machine languages can be rather complex, involving many operation codes, different memory addressing modes, and various instruction formats
+
+因此，机器语言可能非常复杂，涉及许多的操作代码，不同的存储地址模式和多种指令格式。
+
+
+
+One way to cope with this complexity is to document machine instructions using an agreed-upon syntax, say LOAD R3,7 rather than 110000101000000110000000000000111.
+
+一个应对这个复杂性的方法就是使用商定好的语法来记录机器指令。例如用LOAD R3,7 ，而不是110000101000000110000000000000111。
+
+And since the translation from symbolic notation to binary code is straightforward, it makes sense to allow low-level programs to be written in symbolic notation and to have a computer program translate them into binary code. 
+
+而且，将符号表示法转化为二进制代码是直接的。因此，允许符号表示法编写低级程序，并让计算机程序将其转化为二进制代码是有意义的。
+
+
+
+The symbolic language is called assembly, and the translator program assembler. The assembler parses each assembly command into its underlying fields, translates each field into its equivalent binary code, and assembles the generated codes into a binary instruction that can be actually executed by the hardware.
+
+这里的符号语言称为汇编语言。翻译器称为汇编器。
+
+汇编器解析每个汇编指令为其基础字段。将每个字段翻译成等效的二进制代码，并且将生成的代码组合为硬件可以实际执行的二进制指令。
+
+
+
+### **Symbols** 符号
+
+Binary instructions are represented in binary code.
+
+二进制指令是以二进制代码形式展现的。
+
+ By definition, they refer to memory addresses using actual numbers. 
+
+根据定义，他们使用实际的数字来引用内存地址。
+
+For example, consider a program that uses a variable to represent the weight of various things, and suppose that this variable has been mapped on location 7 in the computer’s memory.
+
+例如，想象一个使用变量去表示不同事物重量的程序。并且假设这个变量已经映射到内存的位置7.
+
+
+
+ At the binary code level, instructions that manipulate the weight variable must refer to it using the explicit address 7. 
+
+
+
+Yet once we step up to the assembly level, we can allow writing commands like LOAD R3,weight instead of LOAD R3,7. In both cases, the command will effect the same operation: “set R3 to the contents of Memory[7].” In a similar fashion, rather than using commands like goto 250, assembly languages allow commands like goto loop, assuming that somewhere in the program the symbol loop is made to refer to address 250. In general then, symbols are introduced into assembly programs from two sources:
+
+■ *Variables:* The programmer can use symbolic variable names, and the translator will “automatically” assign them to memory addresses. Note that the actual values of these addresses are insignificant, so long as each symbol is resolved to the same address throughout the program’s translation.
+
+■ *Labels:* The programmer can mark various locations in the program with symbols. For example, one can declare the label loop to refer to the beginning of a certain code segment. Other commands in the program can then goto loop, either conditionally or unconditionally.
+
+
+
+
+
+
 
