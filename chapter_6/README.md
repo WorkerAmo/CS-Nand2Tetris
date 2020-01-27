@@ -36,8 +36,6 @@ D=A
 
 [汇编编译器跳转链接](../projects/06/assembler)
 
-
-
 ## 6.1 背景
 
 机器语言通常以2种形式指定：符号和二进制。
@@ -92,31 +90,73 @@ The symbolic language is called assembly, and the translator program assembler. 
 
 Binary instructions are represented in binary code.
 
-二进制指令是以二进制代码形式展现的。
+**二进制指令是以二进制代码形式展现的。**
 
  By definition, they refer to memory addresses using actual numbers. 
 
-根据定义，他们使用实际的数字来引用内存地址。
+**根据定义，他们使用实际的数字来引用内存地址。**
 
 For example, consider a program that uses a variable to represent the weight of various things, and suppose that this variable has been mapped on location 7 in the computer’s memory.
 
-例如，想象一个使用变量去表示不同事物重量的程序。并且假设这个变量已经映射到内存的位置7.
+**例如，想象一个使用变量去表示不同事物重量的程序。并且假设这个变量已经映射到内存的位置7.**
 
 
 
  At the binary code level, instructions that manipulate the weight variable must refer to it using the explicit address 7. 
 
+**在二进制代码的级别，控制重量变量的指令必须x显式引用地址7.**
+
+Yet once we step up to the assembly level, we can allow writing commands like LOAD R3,weight instead of LOAD R3,7. 
+
+**一旦我们提高到汇编层级，我们就可以允许写雷系LOAD R3 weight 这样的指令而不是LOAD R3,7。**
+
+**注释：这部分的意思就是地址7保存的变量的值，在二进制代码层面，就必须用实际地址表述，但是在汇编层面，因为更接近人类层面，所以我们可以使用weight替代地址7。**
 
 
-Yet once we step up to the assembly level, we can allow writing commands like LOAD R3,weight instead of LOAD R3,7. In both cases, the command will effect the same operation: “set R3 to the contents of Memory[7].” In a similar fashion, rather than using commands like goto 250, assembly languages allow commands like goto loop, assuming that somewhere in the program the symbol loop is made to refer to address 250. In general then, symbols are introduced into assembly programs from two sources:
+
+In both cases, the command will effect the same operation: “set R3 to the contents of Memory[7].”
+
+**两种情况下，指令都会实现同样的指令：“将内存地址为7的内容设为R3”。**
+
+ In a similar fashion, rather than using commands like goto 250, assembly languages allow commands like goto loop, assuming that somewhere in the program the symbol loop is made to refer to address 250. 
+
+**以类似的方式，而不是使用类似Goto250的指令，汇编语言允许使用goto loop这样的指令。假设程序中的某个地方，符号loop被引用到地址250.**
+
+In general then, symbols are introduced into assembly programs from two sources:
+
+**一般来说，符号是从2个源头引入到汇编程序里的。**（分别是变量和标签）
 
 ■ *Variables:* The programmer can use symbolic variable names, and the translator will “automatically” assign them to memory addresses. Note that the actual values of these addresses are insignificant, so long as each symbol is resolved to the same address throughout the program’s translation.
 
+**变量：程序员可以使用符号化的变量名，然后翻译器会自动的把它们分配到内存地址。记住，实际变量的地址不重要，只要每个符号通过程序翻译之后可以指向同样的地址。**
+
+解释&重点：
+
+1.程序员为了操作方便可以给地址命名，也就是我们理解的变量名。翻译器会自动翻译到对应的地址。重要的是，这些名字，可以被正确的翻译。
+
+2.执行人类使用的名字和地址一一对应需求的是翻译器：translator。
+
 ■ *Labels:* The programmer can mark various locations in the program with symbols. For example, one can declare the label loop to refer to the beginning of a certain code segment. Other commands in the program can then goto loop, either conditionally or unconditionally.
 
+**程序员可以在程序的各种地方打标签。例如，我们可以声明loop标签引用到特定代码段的开头。程序中的其它指令就可以直接去loop位置。无论是有条件的还是没有条件的。**
 
 
 
+The introduction of symbols into assembly languages suggests that assemblers must be more sophisticated than dumb text processing programs.
+
+**汇编语言引入符号表明，汇编器一定比哑文本处理要复杂的多。**
+
+ Granted, translating agreed-upon symbols into agreed-upon binary codes is not a complicated task. 
+
+**当然，将符号翻译成二进制代码不是一个复杂的任务。**
+
+At the same time, the mapping of user-defined variable names and symbolic labels on actual memory addresses is not trivial. In fact, this symbol resolution task is the first nontrivial translation challenge in our ascent up the software hierarchy from the hardware level. The following example illustrates the challenge and the common way to address it.
+
+**与此同时，将用户定义的变量名和符号标签映射到实际物理地址并不简单。实际上，符号解析的任务是我们从硬件层级到软件层级的第一个重要翻译挑战。下面的示例说明了挑战和一般的方案。**
+
+
+
+**Symbol Resolution** Consider figure 6.1, showing a program written in some self-explanatory low-level language. The program contains four user-defined symbols: two variable names (i and sum) and two labels (loop and end). How can we systematically convert this program into a symbol-less code?
 
 
 
