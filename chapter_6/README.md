@@ -460,7 +460,7 @@ We propose an assembler implementation based on four modules: a Parser module th
 
 **MainProgram，主程序，用来驱动整个翻译过程。**
 
-
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdaqpgowrj30jn0bdjrd.jpg)
 
 **A Note about API Notation** The assembler development is the first in a series of five software construction projects that build our hierarchy of translators (*assembler*, *virtual machine, and compiler*). Since readers can develop these projects in the programming language of their choice, we base our proposed implementation guidelines on language independent APIs. A typical project API describes several modules, each containing one or more routines. In object-oriented languages like Java, C++, and C#, a module usually corresponds to a class, and a routine usually corresponds to a method. In procedural languages, routines correspond to functions, subroutines, or procedures, and modules correspond to collections of routines that handle related data. In some languages (e.g., Modula-2) a module may be expressed explicitly, in others implicitly (e.g., a *file* in the C language), and in others (e.g., Pascal) it will have no corresponding language construct, and will just be a conceptual grouping of routines.
 
@@ -480,11 +480,57 @@ We propose an assembler implementation based on four modules: a Parser module th
 
 
 
+## 6.3.1 ParserModule(解析模组)
 
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdaqpgowrj30jn0bdjrd.jpg)
 
+The main function of the parser is to break each assembly command into its underlying components (fields and symbols). The API is as follows.
 
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbdnhxxsj30bi04amwz.jpg)
 
+**解析器的主要功能是将汇编命令分解为基础组件（字段和符号）。下面是API：**
 
+**Parser:** Encapsulates access to the input code. Reads an assembly language command, parses it, and provides convenient access to the command’s components (fields and symbols). In addition, removes all white space and comments.
+
+**解析器：对输入的代码的访问会被封装。读取一个汇编语言指令，解析，并且提供对指令组成（也就是字段和符号）持续的访问。此外，还要移除空格键和注释。**
+
+**下图是API说明**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbi8s8m3j30f00o0wgj.jpg)
+
+## **6.3.2 The \*Code\* Module**
+
+**Code:** Translates Hack assembly language mnemonics into binary codes.
+
+**Code的作用就是将HACK汇编语言的助记符翻译成二进制代码。**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbl3x265j30am036mwz.jpg)
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbleg36nj30ek04z3yr.jpg)
+
+## **6.3.3 Assembler for Programs with No Symbols**
+
+## 无符号程序的汇编器
+
+We suggest building the assembler in two stages. In the first stage, write an assembler that translates assembly programs without symbols. This can be done using the Parser and Code modules just described. In the second stage, extend the assembler with symbol handling capabilities, as we explain in the next section.
+
+**我们建议在构建汇编器的时候遵循2个步骤。第一步，写一个不用符号翻译汇编程序的汇编器。我们可以通过使用Parser和Code2个模组来实现。第二部，扩展汇编器使其拥有处理符号的能力，我们将在下个部分解释。**
+
+The contract for the first symbol-less stage is that the input Prog.asm program contains no symbols. This means that (a) in all address commands of type @Xxx the Xxx constants are decimal numbers and not symbols, and (b) the input file contains no label commands, namely, no commands of type (Xxx).
+
+**实现无符号的第一步依据是输入的prog.asm程序不包含任何符号。这就意味着，在所有的@XXX和XXX地址指令类型常数都是十进制数并且不包含符号。并且，输入文件也不包含标签指令，即，没有Xxx类型的指令（Loop之类的）。**
+
+The overall symbol-less assembler program can now be implemented as follows. First, the program opens an output file named Prog.hack. Next, the program marches through the lines (assembly instructions) in the supplied Prog.asm file. For each *C*-instruction, the program concatenates the translated binary codes of the instruction fields into a single 16-bit word. Next, the program writes this word into the Prog.hack file. For each *A*-instruction of type @Xxx, the program translates the decimal constant returned by the parser into its binary representation and writes the resulting 16-bit word into the Prog.hack file.
+
+**整个无符号的汇编器程序可以用如下步骤实现。**
+
+**1.程序打开一个输出文件，Prog.hack**
+
+**2.程序遍历prog.asm中的每一行汇编指令**
+
+**对每一个C指令，程序将翻译的二进制代码程序字典级联为一个16位的字。（本质就是拼接数据）**
+
+**3.程序将这个word写进prog.hack输出文件。每个A指令，例如@Xxxx这种的，程序会将解析器返回的十进制常数翻译为其对应的二进制表达，并且将结果的16bit表达写进prog.hack输出文件。**
 
 
 
