@@ -460,8 +460,281 @@ We propose an assembler implementation based on four modules: a Parser module th
 
 **MainProgram，主程序，用来驱动整个翻译过程。**
 
-
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdaqpgowrj30jn0bdjrd.jpg)
 
 **A Note about API Notation** The assembler development is the first in a series of five software construction projects that build our hierarchy of translators (*assembler*, *virtual machine, and compiler*). Since readers can develop these projects in the programming language of their choice, we base our proposed implementation guidelines on language independent APIs. A typical project API describes several modules, each containing one or more routines. In object-oriented languages like Java, C++, and C#, a module usually corresponds to a class, and a routine usually corresponds to a method. In procedural languages, routines correspond to functions, subroutines, or procedures, and modules correspond to collections of routines that handle related data. In some languages (e.g., Modula-2) a module may be expressed explicitly, in others implicitly (e.g., a *file* in the C language), and in others (e.g., Pascal) it will have no corresponding language construct, and will just be a conceptual grouping of routines.
 
 **API表示法的注释**
+
+**汇编器的开发是我们构建翻译器体系项目里5个软件的第一个。（汇编器，虚拟机，编译器）。**
+
+**因为读者可以使用他们自己选择的语言开发西安航母，我们就基于我们提议的实现指南给出独立于语言的API。**（理解为语言们的协议吧，随你用JS还是JAVA）
+
+**一个典型的项目API描述了下面几个模组，每个模组都包含一个或者多个事务。**
+
+**面向对象语言，例如JAVA，C++和C#，一个模组经常对应到一个类。一个事务到一个方法。**
+
+**在面向过程语言里，事务对应函数，子事务或者过程。模组对应一组处理相关数据的事务。**
+
+**在有些语言里，一个模组可能被表述的很明确，在其他语言里，例如C语言，就会很模糊，而Pascal语言里，不会有对应的语言结构，只有事物在概念上的组合。**
+
+
+
+## 6.3.1 ParserModule(解析模组)
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdaqpgowrj30jn0bdjrd.jpg)
+
+The main function of the parser is to break each assembly command into its underlying components (fields and symbols). The API is as follows.
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbdnhxxsj30bi04amwz.jpg)
+
+**解析器的主要功能是将汇编命令分解为基础组件（字段和符号）。下面是API：**
+
+**Parser:** Encapsulates access to the input code. Reads an assembly language command, parses it, and provides convenient access to the command’s components (fields and symbols). In addition, removes all white space and comments.
+
+**解析器：对输入的代码的访问会被封装。读取一个汇编语言指令，解析，并且提供对指令组成（也就是字段和符号）持续的访问。此外，还要移除空格键和注释。**
+
+**下图是API说明**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbi8s8m3j30f00o0wgj.jpg)
+
+## **6.3.2 The \*Code\* Module**
+
+**Code:** Translates Hack assembly language mnemonics into binary codes.
+
+**Code的作用就是将HACK汇编语言的助记符翻译成二进制代码。**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbl3x265j30am036mwz.jpg)
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdbleg36nj30ek04z3yr.jpg)
+
+## **6.3.3 Assembler for Programs with No Symbols**
+
+## 无符号程序的汇编器
+
+We suggest building the assembler in two stages. In the first stage, write an assembler that translates assembly programs without symbols. This can be done using the Parser and Code modules just described. In the second stage, extend the assembler with symbol handling capabilities, as we explain in the next section.
+
+**我们建议在构建汇编器的时候遵循2个步骤。第一步，写一个不用符号翻译汇编程序的汇编器。我们可以通过使用Parser和Code2个模组来实现。第二部，扩展汇编器使其拥有处理符号的能力，我们将在下个部分解释。**
+
+The contract for the first symbol-less stage is that the input Prog.asm program contains no symbols. This means that (a) in all address commands of type @Xxx the Xxx constants are decimal numbers and not symbols, and (b) the input file contains no label commands, namely, no commands of type (Xxx).
+
+**实现无符号的第一步依据是输入的prog.asm程序不包含任何符号。这就意味着，在所有的@XXX和XXX地址指令类型常数都是十进制数并且不包含符号。并且，输入文件也不包含标签指令，即，没有Xxx类型的指令（Loop之类的）。**
+
+The overall symbol-less assembler program can now be implemented as follows. First, the program opens an output file named Prog.hack. Next, the program marches through the lines (assembly instructions) in the supplied Prog.asm file. For each *C*-instruction, the program concatenates the translated binary codes of the instruction fields into a single 16-bit word. Next, the program writes this word into the Prog.hack file. For each *A*-instruction of type @Xxx, the program translates the decimal constant returned by the parser into its binary representation and writes the resulting 16-bit word into the Prog.hack file.
+
+**整个无符号的汇编器程序可以用如下步骤实现。**
+
+**1.程序打开一个输出文件，Prog.hack**
+
+**2.程序遍历prog.asm中的每一行汇编指令**
+
+**对每一个C指令，程序将翻译的二进制代码程序字典级联为一个16位的字。（本质就是拼接数据）**
+
+**3.程序将这个word写进prog.hack输出文件。每个A指令，例如@Xxxx这种的，程序会将解析器返回的十进制常数翻译为其对应的二进制表达，并且将结果的16bit表达写进prog.hack输出文件。**
+
+
+
+## **6.3.4 The \*SymbolTable\* Module**
+
+## 6.3.4 符号表模组
+
+Since Hack instructions can contain symbols, the symbols must be resolved into actual addresses as part of the translation process. The assembler deals with this task using a symbol table, designed to create and maintain the correspondence between symbols and their meaning (in Hack’s case, RAM and ROM addresses). A natural data structure for representing such a relationship is the classical hash table. In most programming languages, such a data structure is available as part of a standard library, and thus there is no need to develop it from scratch. We propose the following API.
+
+**因为HACK指令可以包含符号。符号必须被解析到实际的地址作为处理过程的一部分。**
+
+**汇编器处理这个任务，但是需要依靠符号表。符号表就是被设计成用于创建和维护符号和他们实际意义对应关系的。（在HACK语言的案例中，实际意义指的是RAM和ROM地址）**
+
+**用于表示如此关系的自然数据结构就是经典的哈希表。**
+
+**在大部分的程序语言中，这种数据结构（哈希表）是作为标准库的一部分存在的，因此没有必要抹掉从头开发。**
+
+
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdfglz6g6j30fc06i74n.jpg)
+
+**SymbolTable:** Keeps a correspondence between symbolic labels and numeric addresses.
+
+## 符号表
+
+**保持符号化标签和数字地址对应关系的作用。**
+
+
+
+## **6.3.5 Assembler for Programs with Symbols**
+
+**有符号程序的汇编器**
+
+Assembly programs are allowed to use symbolic labels (destinations of goto commands) before the symbols are defined. This convention makes the life of assembly programmers easier and that of assembler developers harder. A common solution to this complication is to write a two-pass assembler that reads the code twice, from start to end. In the first pass, the assembler builds the symbol table and generates no code. In the second pass, all the label symbols encountered in the program have already been bound to memory locations and recorded in the symbol table. Thus, the assembler can replace each symbol with its corresponding meaning (numeric address) and generate the final binary code.
+
+Recall that there are three types of symbols in the Hack language: predefined symbols, labels, and variables. The symbol table should contain and handle all these symbols, as follows.
+
+**在符号被定义之前，汇编程序是允许使用符号标签的（也就是goto指令的目的地）。这个约定让汇编程序员的生活更加简单，但是让汇编程序开发人员更痛苦了。**
+
+**普通的方案是写一个从头到位读取代码2次的汇编器。**
+
+**第一遍读取的时候，汇编器会建立符号表，但是不生成代码。第二遍遍历的时候，所有的程序中遇到的标签符号都已经被绑定到内存位置并且在符号表中被记录了。因此，汇编器可以将其对应的实际含义（也就是数字化地址）替换掉每个符号。然后生成最终的代码。**
+
+
+
+**Initialization** Initialize the symbol table with all the predefined symbols and their pre-allocated RAM addresses, according to section 6.2.3.
+
+**初始化**
+
+**使用所有的预定义符号表和预分配的RAM地址去初始化符号表。细节见6.2.3**
+
+**First Pass** Go through the entire assembly program, line by line, and build the symbol table without generating any code. As you march through the program lines, keep a running number recording the ROM address into which the current command will be eventually loaded. This number starts at 0 and is incremented by 1 whenever a *C*-instruction or an *A*-instruction is encountered, but does not change when a label pseudocommand or a comment is encountered. Each time a pseudocommand (Xxx) is encountered, add a new entry to the symbol table, associating Xxx with the ROM address that will eventually store the next command in the program. This pass results in entering all the program’s labels along with their ROM addresses into the symbol table. The program’s variables are handled in the second pass.
+
+**第一轮**
+
+**走一遍整个汇编程序，一行一行的，构建符号表但不生成任何代码。当你可以遍历程序的每一行，保持运行的数字记录的ROM地址是当前指令将要被最终加载的即可。当遇到C指令和A指令整个数字从0开始并且一次加1（类似PC计数器？）。但是这个数字在遇到标签伪指令或者注释的时候不做任何改变。**
+
+**每次遇到伪指令（Xxx这样的），就给符号表添加一个新的实体。将Xxx和最终保存的程序中下个指令的ROM地址关联。**
+
+**这一轮下来，所有的程序标签和他们的ROM地址都被加到了符号表中。程序的变量会在第二轮处理。**
+
+
+
+**Second Pass** Now go again through the entire program, and parse each line. Each time a symbolic *A*-instruction is encountered, namely, @Xxx where Xxx is a symbol and not a number, look up Xxx in the symbol table. If the symbol is found in the table, replace it with its numeric meaning and complete the command’s translation. If the symbol is not found in the table, then it must represent a new variable. To handle it, add the pair (Xxx, n) to the symbol table, where n is the next available RAM address, and complete the command’s translation. The allocated RAM addresses are consecutive numbers, starting at address 16 (just after the addresses allocated to the predefined symbols).
+
+This completes the assembler’s implementation.
+
+**第二轮**
+
+**这次我们再看一遍整个程序，解析每一行。每次遇到A指令符号，即，@Xxx，Xxxx符号不是数字，我们就查询符号表。如果符号表可以找到这个字符，就用数字含义（也就是数字化地址）替换掉它。然后结束此步翻译工作。**
+
+**如果表没有找到，那它就必须作为一个新变量存在。为了处理这个新变量，我们就必须在符号表新加一对数据。**
+
+**（Xxx,n）这里的n代表下个可获得的RAM地址，然后我们结束指令翻译工作。分配的RAM地址是连续的数字。从16开始，就仅挨着给预定义字符分配的地址后面。**
+
+**这样我们就完成了汇编器的实现。**
+
+
+
+# ***\*6.4 Perspective\****
+
+## 观点？
+
+Like most assemblers, the Hack assembler is a relatively simple program, dealing mainly with text processing. Naturally, assemblers for richer machine languages are more complex. Also, some assemblers feature more sophisticated symbol handling capabilities not found in Hack. For example, the assembler may allow programmers to explicitly associate symbols with particular data addresses, to perform “constant arithmetic” on symbols (e.g., to use table+5 to refer to the fifth memory location after the address referred to by table), and so on. Additionally, many assemblers are capable of handling macro commands. A macro command is simply a sequence of machine instructions that has a name. For example, our assembler can be extended to translate an agreed-upon macro-command, say D=M[xxx], into the two instructions@xxx followed immediately by D=M (xxx being an address). Clearly, such macro commands can considerably simplify the programming of commonly occurring operations, at a low translation cost.
+
+**和大部分的汇编器一样，HACK汇编器是一个相对简单的程序。主要是处理文本文字的。**
+
+**自然的，更丰富机器语言的汇编器就更复杂。**
+
+**当然，一些很重要的汇编器特性，符号处理能力在HACK里面并没有。例如，汇编器也许应该允许程序员去明确特定数据地址和符号之间的关系，来为了实现基于符号的常数运算（例如table+5来引用table之后的第五个内存地址）等等。此外，很多汇编器都有能力处理宏命令（marco command）。**
+
+**宏命令是一系列拥有名字的机器指令。**
+
+**例如，我们的汇编器可以扩展有翻译一个基于共识的宏指令： D=M[xxx]为2个指令， @xxx D=M 。xxx是地址。**
+
+**显然，这样的宏命令可以相当程度简化常见操作的编程，降低翻译的开支。**
+
+
+
+We note in closing that stand-alone assemblers are rarely used in practice. First, assembly programs are rarely written by humans, but rather by compilers. And a compiler—being an automaton—does not have to bother to generate symbolic commands, since it may be more convenient to directly produce binary machine code. On the other hand, many high-level language compilers allow programmers to embed segments of assembly language code within high-level programs. This capability, which is rather common in C language compilers, gives the programmer direct control of the underlying hardware, for optimization.
+
+**最后我们发现，独立的编译器在实践中很少用到。第一，汇编程序很少需要人类去写，然而编译器不是。**
+
+**并且，编译器作为自动机，并不需要烦心符号指令，因为直接给出二进制代码会更方便。另一方面来说，许多高级语言编译器允许程序员去使用高级程序组装汇编代码片段。**
+
+**这个能力在C语言很常见。给了程序员直接控制底层硬件的能力，从而优化程序。**
+
+
+
+# ***\*6.5 Project\****
+
+**练手项目（实现汇编器）**
+
+**Objective** Develop an assembler that translates programs written in Hack assembly language into the binary code understood by the Hack hardware platform. The assembler must implement the translation specification described in section 6.2.
+
+**第一个程序目标是开发一个汇编器，用来翻译HACK编写的汇编语言到二进制代码，并且可以被HACK底层理解。**
+
+**这个汇编器必须实现6.2部分指明的翻译任务。**
+
+
+
+**Resources** The only tool needed for completing this project is the programming language in which you will implement your assembler. You may also find the following two tools useful: the assembler and CPU emulator supplied with the book. These tools allow you to experiment with a working assembler before you set out to build one yourself. In addition, the supplied assembler provides a visual line-by-line translation GUI and allows online code comparisons with the outputs that your assembler will generate. For more information about these capabilities, refer to the assembler tutorial (part of the book’s software suite).
+
+**第二个程序，需要借助你选择实现汇编器的编程语言。然后需要借助汇编器和书本提供的CPU模拟器。**
+
+**这些工具允许你在你将它用于工作之前，测试你写的汇编器。**
+
+**此外，提供的汇编器给了一行一行翻译的图形管理界面，允许你比较每一行的输出。**
+
+
+
+**Contract** When loaded into your assembler, a Prog.asm file containing a valid Hack assembly language program should be translated into the correct Hack binary code and stored in a Prog.hack file. The output produced by your assembler must be identical to the output produced by the assembler supplied with the book.
+
+**约定**
+
+**程序加载到你的汇编器之后，包含合法的HACK汇编语言程序的prog.asm文件应该被正确翻译为二进制代码并被保存在prog.hack文件。这个输出文件必须通过书本提供的编译器的检验。**
+
+
+
+**Building Plan** We suggest building the assembler in two stages. First write a symbol-less assembler, namely, an assembler that can only translate programs that contain no symbols. Then extend your assembler with symbol handling capabilities. The test programs that we supply here come in two such versions (without and with symbols), to help you test your assembler incrementally.
+
+**构建计划。**
+
+**我们建议2个步骤实现，第一步是无符号汇编器，即，一个只能翻译不包含任何符号的汇编器。**
+
+**然后扩展它的功能，是它有能力处理符号。**
+
+**我们提供的测试程序有2个版本，对应包含符号和不包含符号的，这样可以逐步帮你测试你写的汇编器。**
+
+
+
+**Test Programs** Each test program except the first one comes in two versions: ProgL.asm is symbol-less, and Prog.asm is with symbols.
+
+**所有测试程序（除了第一个），都有2个版本，ProgL带L的是less，表示不带符号。prog.asm表示有符号的。**
+
+
+
+*Add:* Adds the constants 2 and 3 and puts the result in R0.
+
+**add任务： 需要实现将2个常数2和3相加，并把结果加到R0.**
+
+
+
+*Max:* Computes max(R0, R1) and puts the result in R2.
+
+**Max: 对比R0和R1的最大值然后把结果给R2。**
+
+
+
+*Rect:* Draws a rectangle at the top left corner of the screen. The rectangle is 16 pixels wide and R0 pixels high.
+
+**在屏幕上左角落绘制一个正方形，正方形是16像素款，R0像素高。**
+
+
+
+*Pong:* A single-player Ping-Pong game. A ball bounces constantly off the screen’s “walls.” The player attempts to hit the ball with a bat by pressing the left and right arrow keys. For every successful hit, the player gains one point and the bat shrinks a little to make the game harder. If the player misses the ball, the game is over. To quit the game, press ESC.
+
+**pong 这个是单人的乒乓球游戏。一个球不断的在屏幕“墙壁”上反弹。玩家通过左右按键当球棒来实现对球的击打。每次成功的击打，玩家都获得一点并且球棒都会缩小一点让游戏更难。如果玩家错失了球，游戏结束，结束游戏，按下ESC键。**
+
+The *Pong* program was written in the Jack programming language (chapter 9) and translated into the supplied assembly program by the Jack compiler (chapters 10-11). Although the original Jack program is only about 300 lines of code, the executable Pong application is about 20,000 lines of binary code, most of which being the Jack operating system (chapter 12). Running this interactive program in the CPU emulator is a slow affair, so don’t expect a high-powered Pong game. This slowness is actually a virtue, since it enables your eye to track the graphical behavior of the program. In future projects in the book, this game will run much faster.
+
+**Pong这个游戏会使用第九章使用的JACK编程语言编写，然后被翻译成汇编程序，通过JACK编译器（10和11章会讲）。尽管开始的JACK程序只有300行代码，但是可执行的pong程序有奖金2000行的二进制代码。大部分是JACK操作系统（12章会讲）。**
+
+**在CPU模拟器里运行这个互动程序很慢，所以不要期待很强的pong游戏。但是同时，这个慢，也是一个优点。因为它可以让你的眼睛追踪程序的图像化行为。在书本未来的项目中，这个程序会运行的快很多。**
+
+
+
+**Steps** Write and test your assembler program in the two stages described previously. You may use the assembler supplied with the book to compare the output of your assembler to the correct output. This testing procedure is described next. For more information about the supplied assembler, refer to the assembler tutorial.
+
+**用之前说的2步来编写测试你的汇编器程序。你也许会使用书本提供的编译器来对你编译器输出的结果进行校对。这个测试过程会在下面描述。要更多的信息，去看汇编器部分的教程。**
+
+
+
+**The Supplied Assembler** The practice of using the supplied assembler (which produces correct binary code) to test another assembler (which is not necessarily correct) is illustrated in figure 6.3. Let Prog.asm be some program written in Hack assembly. Suppose that we translate this program using the supplied assembler, producing a binary file called Prog.hack. Next, we use another assembler (e.g., the one that you wrote) to translate the same program into another file, say Prog1.hack. Now, if the latter assembler is working correctly, it follows that Prog.hack = Prog1.hack. Thus, one way to test a newly written assembler is to load Prog.asm into the supplied assembler program, load Prog1.hack as a compare file, then translate and compare the two binary files (see figure 6.3). If the comparison fails, the assembler that produced Prog1.hack must be buggy; otherwise, it may be error-free.
+
+**提供的汇编器。**
+
+**使用提供的汇编器去测试另一个汇编器在图6.3有演示。**
+
+**让prog.asm成为用HACK汇编编写的程序。假设我们将这个程序使用提供的汇编器进行翻译，得到的二进制文件叫proghack，现在，如果后面的编译器运作正常的话，将遵循Prog.hack = Prog1.hack。因此，测试新写的汇编器的方法是否正确就是加载prog.asm到汇编器程序，将HACK文件作为对比文件。如果对比出错，那么新的汇编器就可能会有问题。**
+
+（说白了就是用你写的编译器的结果去和正确的编译器输出的结果做比对。一句话的事情）
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdpzg8og9j30gx0ci0ub.jpg)
+
+**图片就是汇编器工具，可以对比结果。**
+
