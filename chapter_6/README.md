@@ -640,3 +640,101 @@ We note in closing that stand-alone assemblers are rarely used in practice. Firs
 
 
 
+# ***\*6.5 Project\****
+
+**练手项目（实现汇编器）**
+
+**Objective** Develop an assembler that translates programs written in Hack assembly language into the binary code understood by the Hack hardware platform. The assembler must implement the translation specification described in section 6.2.
+
+**第一个程序目标是开发一个汇编器，用来翻译HACK编写的汇编语言到二进制代码，并且可以被HACK底层理解。**
+
+**这个汇编器必须实现6.2部分指明的翻译任务。**
+
+
+
+**Resources** The only tool needed for completing this project is the programming language in which you will implement your assembler. You may also find the following two tools useful: the assembler and CPU emulator supplied with the book. These tools allow you to experiment with a working assembler before you set out to build one yourself. In addition, the supplied assembler provides a visual line-by-line translation GUI and allows online code comparisons with the outputs that your assembler will generate. For more information about these capabilities, refer to the assembler tutorial (part of the book’s software suite).
+
+**第二个程序，需要借助你选择实现汇编器的编程语言。然后需要借助汇编器和书本提供的CPU模拟器。**
+
+**这些工具允许你在你将它用于工作之前，测试你写的汇编器。**
+
+**此外，提供的汇编器给了一行一行翻译的图形管理界面，允许你比较每一行的输出。**
+
+
+
+**Contract** When loaded into your assembler, a Prog.asm file containing a valid Hack assembly language program should be translated into the correct Hack binary code and stored in a Prog.hack file. The output produced by your assembler must be identical to the output produced by the assembler supplied with the book.
+
+**约定**
+
+**程序加载到你的汇编器之后，包含合法的HACK汇编语言程序的prog.asm文件应该被正确翻译为二进制代码并被保存在prog.hack文件。这个输出文件必须通过书本提供的编译器的检验。**
+
+
+
+**Building Plan** We suggest building the assembler in two stages. First write a symbol-less assembler, namely, an assembler that can only translate programs that contain no symbols. Then extend your assembler with symbol handling capabilities. The test programs that we supply here come in two such versions (without and with symbols), to help you test your assembler incrementally.
+
+**构建计划。**
+
+**我们建议2个步骤实现，第一步是无符号汇编器，即，一个只能翻译不包含任何符号的汇编器。**
+
+**然后扩展它的功能，是它有能力处理符号。**
+
+**我们提供的测试程序有2个版本，对应包含符号和不包含符号的，这样可以逐步帮你测试你写的汇编器。**
+
+
+
+**Test Programs** Each test program except the first one comes in two versions: ProgL.asm is symbol-less, and Prog.asm is with symbols.
+
+**所有测试程序（除了第一个），都有2个版本，ProgL带L的是less，表示不带符号。prog.asm表示有符号的。**
+
+
+
+*Add:* Adds the constants 2 and 3 and puts the result in R0.
+
+**add任务： 需要实现将2个常数2和3相加，并把结果加到R0.**
+
+
+
+*Max:* Computes max(R0, R1) and puts the result in R2.
+
+**Max: 对比R0和R1的最大值然后把结果给R2。**
+
+
+
+*Rect:* Draws a rectangle at the top left corner of the screen. The rectangle is 16 pixels wide and R0 pixels high.
+
+**在屏幕上左角落绘制一个正方形，正方形是16像素款，R0像素高。**
+
+
+
+*Pong:* A single-player Ping-Pong game. A ball bounces constantly off the screen’s “walls.” The player attempts to hit the ball with a bat by pressing the left and right arrow keys. For every successful hit, the player gains one point and the bat shrinks a little to make the game harder. If the player misses the ball, the game is over. To quit the game, press ESC.
+
+**pong 这个是单人的乒乓球游戏。一个球不断的在屏幕“墙壁”上反弹。玩家通过左右按键当球棒来实现对球的击打。每次成功的击打，玩家都获得一点并且球棒都会缩小一点让游戏更难。如果玩家错失了球，游戏结束，结束游戏，按下ESC键。**
+
+The *Pong* program was written in the Jack programming language (chapter 9) and translated into the supplied assembly program by the Jack compiler (chapters 10-11). Although the original Jack program is only about 300 lines of code, the executable Pong application is about 20,000 lines of binary code, most of which being the Jack operating system (chapter 12). Running this interactive program in the CPU emulator is a slow affair, so don’t expect a high-powered Pong game. This slowness is actually a virtue, since it enables your eye to track the graphical behavior of the program. In future projects in the book, this game will run much faster.
+
+**Pong这个游戏会使用第九章使用的JACK编程语言编写，然后被翻译成汇编程序，通过JACK编译器（10和11章会讲）。尽管开始的JACK程序只有300行代码，但是可执行的pong程序有奖金2000行的二进制代码。大部分是JACK操作系统（12章会讲）。**
+
+**在CPU模拟器里运行这个互动程序很慢，所以不要期待很强的pong游戏。但是同时，这个慢，也是一个优点。因为它可以让你的眼睛追踪程序的图像化行为。在书本未来的项目中，这个程序会运行的快很多。**
+
+
+
+**Steps** Write and test your assembler program in the two stages described previously. You may use the assembler supplied with the book to compare the output of your assembler to the correct output. This testing procedure is described next. For more information about the supplied assembler, refer to the assembler tutorial.
+
+**用之前说的2步来编写测试你的汇编器程序。你也许会使用书本提供的编译器来对你编译器输出的结果进行校对。这个测试过程会在下面描述。要更多的信息，去看汇编器部分的教程。**
+
+
+
+**The Supplied Assembler** The practice of using the supplied assembler (which produces correct binary code) to test another assembler (which is not necessarily correct) is illustrated in figure 6.3. Let Prog.asm be some program written in Hack assembly. Suppose that we translate this program using the supplied assembler, producing a binary file called Prog.hack. Next, we use another assembler (e.g., the one that you wrote) to translate the same program into another file, say Prog1.hack. Now, if the latter assembler is working correctly, it follows that Prog.hack = Prog1.hack. Thus, one way to test a newly written assembler is to load Prog.asm into the supplied assembler program, load Prog1.hack as a compare file, then translate and compare the two binary files (see figure 6.3). If the comparison fails, the assembler that produced Prog1.hack must be buggy; otherwise, it may be error-free.
+
+**提供的汇编器。**
+
+**使用提供的汇编器去测试另一个汇编器在图6.3有演示。**
+
+**让prog.asm成为用HACK汇编编写的程序。假设我们将这个程序使用提供的汇编器进行翻译，得到的二进制文件叫proghack，现在，如果后面的编译器运作正常的话，将遵循Prog.hack = Prog1.hack。因此，测试新写的汇编器的方法是否正确就是加载prog.asm到汇编器程序，将HACK文件作为对比文件。如果对比出错，那么新的汇编器就可能会有问题。**
+
+（说白了就是用你写的编译器的结果去和正确的编译器输出的结果做比对。一句话的事情）
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdpzg8og9j30gx0ci0ub.jpg)
+
+**图片就是汇编器工具，可以对比结果。**
+
