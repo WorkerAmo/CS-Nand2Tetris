@@ -465,3 +465,26 @@ We propose an assembler implementation based on four modules: a Parser module th
 **A Note about API Notation** The assembler development is the first in a series of five software construction projects that build our hierarchy of translators (*assembler*, *virtual machine, and compiler*). Since readers can develop these projects in the programming language of their choice, we base our proposed implementation guidelines on language independent APIs. A typical project API describes several modules, each containing one or more routines. In object-oriented languages like Java, C++, and C#, a module usually corresponds to a class, and a routine usually corresponds to a method. In procedural languages, routines correspond to functions, subroutines, or procedures, and modules correspond to collections of routines that handle related data. In some languages (e.g., Modula-2) a module may be expressed explicitly, in others implicitly (e.g., a *file* in the C language), and in others (e.g., Pascal) it will have no corresponding language construct, and will just be a conceptual grouping of routines.
 
 **API表示法的注释**
+
+**汇编器的开发是我们构建翻译器体系项目里5个软件的第一个。（汇编器，虚拟机，编译器）。**
+
+**因为读者可以使用他们自己选择的语言开发西安航母，我们就基于我们提议的实现指南给出独立于语言的API。**（理解为语言们的协议吧，随你用JS还是JAVA）
+
+**一个典型的项目API描述了下面几个模组，每个模组都包含一个或者多个事务。**
+
+**面向对象语言，例如JAVA，C++和C#，一个模组经常对应到一个类。一个事务到一个方法。**
+
+**在面向过程语言里，事务对应函数，子事务或者过程。模组对应一组处理相关数据的事务。**
+
+**在有些语言里，一个模组可能被表述的很明确，在其他语言里，例如C语言，就会很模糊，而Pascal语言里，不会有对应的语言结构，只有事物在概念上的组合。**
+
+
+
+
+
+
+
+
+
+
+
