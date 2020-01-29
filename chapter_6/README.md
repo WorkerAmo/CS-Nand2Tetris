@@ -534,3 +534,109 @@ The overall symbol-less assembler program can now be implemented as follows. Fir
 
 
 
+## **6.3.4 The \*SymbolTable\* Module**
+
+## 6.3.4 符号表模组
+
+Since Hack instructions can contain symbols, the symbols must be resolved into actual addresses as part of the translation process. The assembler deals with this task using a symbol table, designed to create and maintain the correspondence between symbols and their meaning (in Hack’s case, RAM and ROM addresses). A natural data structure for representing such a relationship is the classical hash table. In most programming languages, such a data structure is available as part of a standard library, and thus there is no need to develop it from scratch. We propose the following API.
+
+**因为HACK指令可以包含符号。符号必须被解析到实际的地址作为处理过程的一部分。**
+
+**汇编器处理这个任务，但是需要依靠符号表。符号表就是被设计成用于创建和维护符号和他们实际意义对应关系的。（在HACK语言的案例中，实际意义指的是RAM和ROM地址）**
+
+**用于表示如此关系的自然数据结构就是经典的哈希表。**
+
+**在大部分的程序语言中，这种数据结构（哈希表）是作为标准库的一部分存在的，因此没有必要抹掉从头开发。**
+
+
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdfglz6g6j30fc06i74n.jpg)
+
+**SymbolTable:** Keeps a correspondence between symbolic labels and numeric addresses.
+
+## 符号表
+
+**保持符号化标签和数字地址对应关系的作用。**
+
+
+
+## **6.3.5 Assembler for Programs with Symbols**
+
+**有符号程序的汇编器**
+
+Assembly programs are allowed to use symbolic labels (destinations of goto commands) before the symbols are defined. This convention makes the life of assembly programmers easier and that of assembler developers harder. A common solution to this complication is to write a two-pass assembler that reads the code twice, from start to end. In the first pass, the assembler builds the symbol table and generates no code. In the second pass, all the label symbols encountered in the program have already been bound to memory locations and recorded in the symbol table. Thus, the assembler can replace each symbol with its corresponding meaning (numeric address) and generate the final binary code.
+
+Recall that there are three types of symbols in the Hack language: predefined symbols, labels, and variables. The symbol table should contain and handle all these symbols, as follows.
+
+**在符号被定义之前，汇编程序是允许使用符号标签的（也就是goto指令的目的地）。这个约定让汇编程序员的生活更加简单，但是让汇编程序开发人员更痛苦了。**
+
+**普通的方案是写一个从头到位读取代码2次的汇编器。**
+
+**第一遍读取的时候，汇编器会建立符号表，但是不生成代码。第二遍遍历的时候，所有的程序中遇到的标签符号都已经被绑定到内存位置并且在符号表中被记录了。因此，汇编器可以将其对应的实际含义（也就是数字化地址）替换掉每个符号。然后生成最终的代码。**
+
+
+
+**Initialization** Initialize the symbol table with all the predefined symbols and their pre-allocated RAM addresses, according to section 6.2.3.
+
+**初始化**
+
+**使用所有的预定义符号表和预分配的RAM地址去初始化符号表。细节见6.2.3**
+
+**First Pass** Go through the entire assembly program, line by line, and build the symbol table without generating any code. As you march through the program lines, keep a running number recording the ROM address into which the current command will be eventually loaded. This number starts at 0 and is incremented by 1 whenever a *C*-instruction or an *A*-instruction is encountered, but does not change when a label pseudocommand or a comment is encountered. Each time a pseudocommand (Xxx) is encountered, add a new entry to the symbol table, associating Xxx with the ROM address that will eventually store the next command in the program. This pass results in entering all the program’s labels along with their ROM addresses into the symbol table. The program’s variables are handled in the second pass.
+
+**第一轮**
+
+**走一遍整个汇编程序，一行一行的，构建符号表但不生成任何代码。当你可以遍历程序的每一行，保持运行的数字记录的ROM地址是当前指令将要被最终加载的即可。当遇到C指令和A指令整个数字从0开始并且一次加1（类似PC计数器？）。但是这个数字在遇到标签伪指令或者注释的时候不做任何改变。**
+
+**每次遇到伪指令（Xxx这样的），就给符号表添加一个新的实体。将Xxx和最终保存的程序中下个指令的ROM地址关联。**
+
+**这一轮下来，所有的程序标签和他们的ROM地址都被加到了符号表中。程序的变量会在第二轮处理。**
+
+
+
+**Second Pass** Now go again through the entire program, and parse each line. Each time a symbolic *A*-instruction is encountered, namely, @Xxx where Xxx is a symbol and not a number, look up Xxx in the symbol table. If the symbol is found in the table, replace it with its numeric meaning and complete the command’s translation. If the symbol is not found in the table, then it must represent a new variable. To handle it, add the pair (Xxx, n) to the symbol table, where n is the next available RAM address, and complete the command’s translation. The allocated RAM addresses are consecutive numbers, starting at address 16 (just after the addresses allocated to the predefined symbols).
+
+This completes the assembler’s implementation.
+
+**第二轮**
+
+**这次我们再看一遍整个程序，解析每一行。每次遇到A指令符号，即，@Xxx，Xxxx符号不是数字，我们就查询符号表。如果符号表可以找到这个字符，就用数字含义（也就是数字化地址）替换掉它。然后结束此步翻译工作。**
+
+**如果表没有找到，那它就必须作为一个新变量存在。为了处理这个新变量，我们就必须在符号表新加一对数据。**
+
+**（Xxx,n）这里的n代表下个可获得的RAM地址，然后我们结束指令翻译工作。分配的RAM地址是连续的数字。从16开始，就仅挨着给预定义字符分配的地址后面。**
+
+**这样我们就完成了汇编器的实现。**
+
+
+
+# ***\*6.4 Perspective\****
+
+## 观点？
+
+Like most assemblers, the Hack assembler is a relatively simple program, dealing mainly with text processing. Naturally, assemblers for richer machine languages are more complex. Also, some assemblers feature more sophisticated symbol handling capabilities not found in Hack. For example, the assembler may allow programmers to explicitly associate symbols with particular data addresses, to perform “constant arithmetic” on symbols (e.g., to use table+5 to refer to the fifth memory location after the address referred to by table), and so on. Additionally, many assemblers are capable of handling macro commands. A macro command is simply a sequence of machine instructions that has a name. For example, our assembler can be extended to translate an agreed-upon macro-command, say D=M[xxx], into the two instructions@xxx followed immediately by D=M (xxx being an address). Clearly, such macro commands can considerably simplify the programming of commonly occurring operations, at a low translation cost.
+
+**和大部分的汇编器一样，HACK汇编器是一个相对简单的程序。主要是处理文本文字的。**
+
+**自然的，更丰富机器语言的汇编器就更复杂。**
+
+**当然，一些很重要的汇编器特性，符号处理能力在HACK里面并没有。例如，汇编器也许应该允许程序员去明确特定数据地址和符号之间的关系，来为了实现基于符号的常数运算（例如table+5来引用table之后的第五个内存地址）等等。此外，很多汇编器都有能力处理宏命令（marco command）。**
+
+**宏命令是一系列拥有名字的机器指令。**
+
+**例如，我们的汇编器可以扩展有翻译一个基于共识的宏指令： D=M[xxx]为2个指令， @xxx D=M 。xxx是地址。**
+
+**显然，这样的宏命令可以相当程度简化常见操作的编程，降低翻译的开支。**
+
+
+
+We note in closing that stand-alone assemblers are rarely used in practice. First, assembly programs are rarely written by humans, but rather by compilers. And a compiler—being an automaton—does not have to bother to generate symbolic commands, since it may be more convenient to directly produce binary machine code. On the other hand, many high-level language compilers allow programmers to embed segments of assembly language code within high-level programs. This capability, which is rather common in C language compilers, gives the programmer direct control of the underlying hardware, for optimization.
+
+**最后我们发现，独立的编译器在实践中很少用到。第一，汇编程序很少需要人类去写，然而编译器不是。**
+
+**并且，编译器作为自动机，并不需要烦心符号指令，因为直接给出二进制代码会更方便。另一方面来说，许多高级语言编译器允许程序员去使用高级程序组装汇编代码片段。**
+
+**这个能力在C语言很常见。给了程序员直接控制底层硬件的能力，从而优化程序。**
+
+
+
