@@ -460,7 +460,7 @@ We propose an assembler implementation based on four modules: a Parser module th
 
 **MainProgram，主程序，用来驱动整个翻译过程。**
 
-![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbdaqpgowrj30jn0bdjrd.jpg)
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbfme3xzxdj30i50b6aa2.jpg)
 
 **A Note about API Notation** The assembler development is the first in a series of five software construction projects that build our hierarchy of translators (*assembler*, *virtual machine, and compiler*). Since readers can develop these projects in the programming language of their choice, we base our proposed implementation guidelines on language independent APIs. A typical project API describes several modules, each containing one or more routines. In object-oriented languages like Java, C++, and C#, a module usually corresponds to a class, and a routine usually corresponds to a method. In procedural languages, routines correspond to functions, subroutines, or procedures, and modules correspond to collections of routines that handle related data. In some languages (e.g., Modula-2) a module may be expressed explicitly, in others implicitly (e.g., a *file* in the C language), and in others (e.g., Pascal) it will have no corresponding language construct, and will just be a conceptual grouping of routines.
 
