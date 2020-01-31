@@ -5,7 +5,7 @@
 exports.__esModule = true;
 var code_1 = require("./code"); // Code module
 var symbolTable_1 = require("./symbolTable"); // sumboltable module
-var varityIndex = 16; // 
+var varityIndex = 16; // 配合SymbolTable使用，传输给addEntry作为参数，确定地址的。因为0~15都已经被占用，后面被占用的是16384，所以这里需要从16开始计数。
 // C-instruction:
 // 1  1  1  a  c1 c2 c3 c4 c5 c6 d1 d2 d3 j1 j2 j3
 // 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
@@ -65,7 +65,7 @@ var Parser = /** @class */ (function () {
     // ============== 命令类型 ===============
     // A,L 命令时候调用
     Parser.symbol = function (line) {
-        return symbolTable_1["default"].getAddress(line); // 非自定义名称怎么翻译，要看symbolTable了
+        return symbolTable_1["default"].getAddress(line); // 见symbolTable的方法
     };
     // C 命令调用处理dest
     Parser.dest = function (command) {
