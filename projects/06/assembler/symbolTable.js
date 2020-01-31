@@ -38,12 +38,14 @@ var SymbolTable = /** @class */ (function () {
     };
     // 获取与 sybmol 相关的地址
     SymbolTable.getAddress = function (symbol) {
-        symbol = symbol.replace(/@/, "");
+        symbol = symbol.replace(/@/, ""); // A和L指令进来后剥离@
         if (this.contains(symbol)) {
-            symbol = Map[symbol];
+            symbol = Map[symbol];// 如果是LCL等内置名称那么symbol就会被替换为1等MAP内对应的值。
         }
         var res = "0000000000000000" + parseInt(symbol).toString(2);
-        return res.substring(res.length - 16);
+        // LCL结果为1，结果为 '00000000000000001'
+        // THAT的结果是4 结果为 '0000000000000000100'
+        return res.substring(res.length - 16); // 保证长度始终为16，剔除前面多余的0。THAT结果为0000000000000100。前面的3个0被剔除了。
     };
     return SymbolTable;
 }());
