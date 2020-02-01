@@ -21,7 +21,7 @@ for (var pc = 0; pc < lines.length;) { // PC用来记录当前第几行指令
         lines.splice(pc, 1);
     }
     else {
-        pc++; // 不是L指令就看下一条。
+        pc++; // 不是L指令就看下一条。(Lcommand 本质其实是pseudo-command也就是伪指令，例如LOOP这样的)
     }
     //综合来说，这个步骤就是针对用户自定义的，不在符号表中的符号。简单来说就是自定义符号处理步骤。
 }

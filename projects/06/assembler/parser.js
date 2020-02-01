@@ -32,7 +32,7 @@ var Parser = /** @class */ (function () {
                 symbolTable_1["default"].addEntry(line, varityIndex);
                 varityIndex++;
             }
-            return this.symbol(line);
+            return this.symbol(line); // 看下方67行Parser.symbol
         }
         if (type === "C_COMMAND") { // 如果是计算指令，初始化值，
             var dest = "0";
