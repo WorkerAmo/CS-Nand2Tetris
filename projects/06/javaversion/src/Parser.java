@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public class Parser {
 
     private Integer tableIndex =16;
-    SymbolTable table = new SymbolTable();
+    public SymbolTable table = new SymbolTable();
     Code code = new Code();
 
     Parser() {}
@@ -71,7 +71,8 @@ public class Parser {
         if (typeStr=="A_COMMAND"){
             commandLine=commandLine.replaceAll("@","");
 
-            if (Integer.valueOf(commandLine) == null && !table.containsSymbol(commandLine)) {
+            // Integer.valueOf(commandLine) == null && 这里要处理纯数字的情况
+            if (!table.containsSymbol(commandLine)) {
                 // 条件都不满足意味着 table 内是没有的，得加
                 table.addEntry(commandLine, tableIndex);
                 this.tableIndex++;
@@ -120,12 +121,12 @@ public class Parser {
         String lineTxt = null;
         while ((lineTxt = bufferedReader.readLine()) != null) {
             // 1.剔除每行注释部分内容
-            String newString = this.clear(lineTxt);
-            lineTxt = lineTxt.replaceAll("//.*","");
-            lineTxt = lineTxt.replaceAll("\\s","");
-            if (lineTxt.length()!=0){
-                linesList.add(lineTxt);
-            }
+                String newString = this.clear(lineTxt);
+                lineTxt = lineTxt.replaceAll("//.*","");
+                lineTxt = lineTxt.trim();
+                if (lineTxt.length()!=0){
+                    linesList.add(lineTxt);
+                }
         }
         read.close();
         return linesList;
