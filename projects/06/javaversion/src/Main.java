@@ -15,7 +15,7 @@ public class Main {
         Parser parser = new Parser();
         ArrayList commandsList;
 
-        File file = new File("/Users/workeramo/LocalFolders/我的工作间/计算机基础资料/计算机组成原理/Coursera/nandgithubdemo/CS-Nand2Tetris/projects/06/javaversion/src/Max.asm");
+        File file = new File("/Users/workeramo/LocalFolders/我的工作间/计算机基础资料/计算机组成原理/Coursera/nandgithubdemo/CS-Nand2Tetris/projects/06/javaversion/src/Rect.asm");
         if (!file.exists()) {
             System.out.println("文件不存在!");
             return ;
