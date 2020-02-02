@@ -57,8 +57,12 @@ public class Main {
                 //System.out.println(currentCommand);
                 System.out.println();
                 String binaryCodeLine = parser.getBinaryCode(currentCommand);
-                bw.write(binaryCodeLine);
-                bw.newLine();
+                if (binaryCodeLine.length()>0){
+                    bw.write(binaryCodeLine);
+                    bw.newLine();
+                }else {
+                    System.out.println("有空格");
+                }
             }
             bw.close();
         } catch (IOException e) {
