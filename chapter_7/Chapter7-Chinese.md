@@ -147,3 +147,109 @@ Another benefit of the virtual machine approach is modularity. Every improvement
 **虚拟机的另一个好处就是模块化。VM效率的每个改进都立即被所有编译器继承。**
 
 **配备了虚拟机的每个数字设备都可以立即收益。**
+
+
+
+## **7.1.2 The Stack Machine Model**
+
+Like most programming languages, the VM language consists of arithmetic, memory access, program flow, and subroutine calling operations. There are several possible software paradigms on which to base such a language implementation. One of the key questions regarding this choice is where will the operands and the results of the *VM operations reside?* Perhaps the cleanest solution is to put them on a stack data structure.
+
+**和大部分的语言类似，虚拟机使用的语言由数字，存储方案程序流，子程调用等操作组成。**
+
+**有几种可行的软件范式基于这样的语言实现。**
+
+**关于这个选择关键问题是，操作数和VM操作的结果放在那里？**
+
+**也许最干净的解决方案是把他们放在堆栈数据结构中。**
+
+
+
+In a *stack machine* model, arithmetic commands pop their operands from the top of the stack and push their results back onto the top of the stack. Other commands transfer data items from the stack’s top to designated memory locations, and vice versa. 
+
+As it turns out, these simple stack operations can be used to implement the evaluation of any arithmetic or logical expression. Further, any program, written in any programming language, can be translated into an equivalent stack machine program. One such stack machine model is used in the Java Virtual Machine as well as in the VM described and built in what follows.
+
+**在堆栈机模型中，算术指令使用POP指令把操作数从栈顶POP出去，然后把结果在PUSH进去。**
+
+**其他的指令把数据从栈顶传递到设计的预定内存地址。**
+
+**这些简单的栈操作可以被使用去实现任何数学和逻辑操作。**
+
+**任何语言编写的程序，可以被转换成等价的栈机器程序。**
+
+**这样的机器模型被用在了JVM里面。**
+
+
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gblt6nsdqsj30gh0caaao.jpg)
+
+
+
+**Elementary Stack Operations** A stack is an abstract data structure that supports two basic operations: push and pop. The push operation adds an element to the top of the stack; the element that was previously on top is pushed below the newly added element. The pop operation retrieves and removes the top element; the element just below it moves up to the top position. Thus the stack implements a last-in-first-out (LIFO) storage model, illustrated in figure 7.2.
+
+**栈是支持POP和PUSH2个操作的抽象数据结构。**
+
+**PUSH操作从栈顶添加新元素,新加的会覆盖在旧的上面。**
+
+**POP操作获取并移除顶部的元素。然后原来顶部下面的物体就会变成新的栈顶。**
+
+**因此，栈的实现是一个后进先出的模型。在7.2图会展示。**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbltf42famj30gh08lglu.jpg)
+
+We see that stack access differs from conventional memory access in several respects. First, the stack is accessible only from the top, one item at a time. Second, reading the stack is a lossy operation: The only way to retrieve the top value is to remove it from the stack.
+
+ In contrast, the act of reading a value from a regular memory location has no impact on the memory’s state. Finally, writing an item onto the stack adds it to the stack’s top, without changing the rest of the stack. In contrast, writing an item into a regular memory location is a lossy operation, since it overrides the location’s previous value.
+
+**我们可以看到，栈访问和常规内存访问在某些方面有不同。**
+
+**首先，栈只能从顶部访问，一次一个对象。**
+
+**第二，读栈是一个有损耗的操作。读取栈元素的唯一途径就是把它从栈顶溢出。**
+
+**相反，从存储地址读取值的操作不会有任何影响。**
+
+**最终，往栈添加元素，不影响栈其余部分。相反，写元素进常规的存储地址就会覆盖之前的值。**
+
+
+
+The stack data structure can be implemented in several different ways. The simplest approach is to keep an array, say stack, and a stack pointer variable, say sp, that points to the available location just above the topmost element. The *push x* command is then implemented by storing x at the array entry pointed by *sp* and then incrementing *sp* (i.e., stack [sp]=x; sp=sp+1). The *pop* operation is implemented by first decrementing *sp* and then returning the value stored in the top position (i.e., sp=sp-1; return stack [sp]).
+
+**要实现栈数据结构有一些不同的方法。最简单的方法就是持有一个Array数组，就说是栈。然后再来个栈指针变量，sp。栈指针指向Array顶部元素。**
+
+**pushx指令然后就被实现了，通过在数组入口sp指向的地方保存x，然后给sp+1。**
+
+ **pop的实现步骤是，先sp减一，然后将保存在顶部位置的值return。**
+
+
+
+As usual in computer science, simplicity and elegance imply power of expression. The simple stack model is a versatile data structure that comes to play in many computer systems and algorithms. In the virtual machine architecture that we build here, it serves two key purposes. First, it is used for handling all the arithmetic and logical operations of the VM. Second, it facilitates subroutine calls and the associated memory allocation—the subjects of the next chapter.
+
+**和计算机科学一样，简明和优雅意味着表达的力量。**
+
+**简单的栈模型在许多计算机系统和算法李，是一个多才多艺的数据结构。**
+
+**我们这里构建的虚拟机器架构有2个目的：第一，处理虚拟机的所有的算数和逻辑操作。第二，它简化了子例程调用和相关的内存分配-下一张的主题。**
+
+
+
+Stack-based arithmetic is a simple matter: the operands are popped from the stack, the required operation is performed on them, and the result is pushed back onto the stack. For example, here is how addition is handled:
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gblunwy3i0j308r027mwy.jpg)
+
+
+
+**基于堆栈的算法很简单。堆栈顶部弹出操作数，对他们执行所需的操作，然后把结果推回堆栈。**
+
+The stack version of other operations (subtract, multiply, etc.) are precisely the same. For example, consider the expression d=(2-x)*(y+5), taken from some high-level program. The stack-based evaluation of this expression is shown in figure 7.3.
+
+**其他操作的堆栈版本完全相同。例如，考虑表达式 d=(2-x)*(y+5)。**
+
+**图7.3展示了这个表达式的等价实现。**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbluzfcvu3j30dr0dkdg0.jpg)
+
+Stack-based evaluation of Boolean expressions has precisely the same flavor. For example, consider the high-level command if (x<7) or (y=8) then.... The stack-based evaluation of this expression is shown in figure 7.4.
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbluzyu5bej30dr0bg3ym.jpg)
+
+The previous examples illustrate a general observation: any arithmetic and Boolean expression—no matter how complex—can be systematically converted into, and evaluated by, a sequence of simple operations on a stack. Thus, one can write a compiler that translates high-level arithmetic and Boolean expressions into sequences of stack commands, as we will do in chapters 10-11. We now turn to specify these commands (section 7.2), and describe their implementation on the Hack platform (section 7.3).
