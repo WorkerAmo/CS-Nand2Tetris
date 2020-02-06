@@ -246,10 +246,210 @@ The stack version of other operations (subtract, multiply, etc.) are precisely t
 
 **图7.3展示了这个表达式的等价实现。**
 
+**先算加减乘除再做乘法。**
+
 ![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbluzfcvu3j30dr0dkdg0.jpg)
 
 Stack-based evaluation of Boolean expressions has precisely the same flavor. For example, consider the high-level command if (x<7) or (y=8) then.... The stack-based evaluation of this expression is shown in figure 7.4.
 
+**基于堆栈的表达式有完全相同的特点。**
+
+**例如，想一个高级的指令 if(x<7)or(x=8) then ... 实现见下方。**
+
 ![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbluzyu5bej30dr0bg3ym.jpg)
 
-The previous examples illustrate a general observation: any arithmetic and Boolean expression—no matter how complex—can be systematically converted into, and evaluated by, a sequence of simple operations on a stack. Thus, one can write a compiler that translates high-level arithmetic and Boolean expressions into sequences of stack commands, as we will do in chapters 10-11. We now turn to specify these commands (section 7.2), and describe their implementation on the Hack platform (section 7.3).
+The previous examples illustrate a general observation: any arithmetic and Boolean expression—no matter how complex—can be systematically converted into, and evaluated by, a sequence of simple operations on a stack.
+
+ Thus, one can write a compiler that translates high-level arithmetic and Boolean expressions into sequences of stack commands, as we will do in chapters 10-11. We now turn to specify these commands (section 7.2), and describe their implementation on the Hack platform (section 7.3).
+
+**之前的案例说明了一般性观察。**
+
+**任何算数和布尔表达式，无论多复杂，都可以被系统性的转换为对应的一系列简单的栈的操作。**
+
+**因此，我们可以写一个编译器，将高级的算数和逻辑表达式翻译成一系列的栈指令，我们会在10~11章实现。**
+
+**我们现在指明这些指令，描述在HACK平台的实现。**
+
+
+
+# 7.2 VM Specification, Part I
+
+## **7.2.1 General**
+
+The virtual machine is stack-based: all operations are done on a stack. It is also function-based: a complete VM program is organized in program units called functions, written in the VM language. Each function has its own stand-alone code and is separately handled. The VM language has a single 16-bit data type that can be used as an integer, a Boolean, or a pointer. The language consists of four types of commands:
+
+**虚拟机基于堆栈：所有的操作都在堆栈完成。它同样基于函数：一个完整的虚拟机程序都被组织到了一个程序单元，也就是用虚拟机语言写的函数里。**
+
+**每个函数都有自己的独立的大妈，并且是单独处理的。**
+
+**虚拟机程序有单独的16位数据类型，可以被当成整型使用，指针，布尔类型。这个语言由四个类型组成：**
+
+■ *Arithmetic commands* perform arithmetic and logical operations on the stack.
+
+**算数指令在堆栈的算数和逻辑操作。**
+
+■ *Memory access commands* transfer data between the stack and virtual memory segments.
+
+**存储访问指令将数据在堆栈和虚拟内存片之间来回转移。**
+
+■ *Program flow commands* facilitate conditional and unconditional branching operations.
+
+**程序流指令有助于有条件和无条件的分支操作。**
+
+■ *Function calling commands* call functions and return from them.
+
+**函数调用指令调用函数并从中返回。**
+
+
+
+Building a virtual machine is a complex undertaking, and so we divide it into two stages. In this chapter we specify the *arithmetic* and *memory access* commands and build a basic VM translator that implements them only. The next chapter specifies the program flow and function calling commands and extends the basic translator into a full-scale virtual machine implementation.
+
+**建造虚拟机是一个复杂的工作，所以我们把他们拆分成两步。**
+
+**这个章节我们指明算数和存储访问，构造一个基础的虚拟机翻译器。**
+
+**下一张，实现程序流和函数调用，来扩展这个基础的翻译器到尺寸虚拟机实现。**
+
+
+
+**Program and Command Structure** A VM *program* is a collection of one or more files with a .vm extension, each consisting of one or more functions. From a compilation standpoint, these constructs correspond, respectively, to the notions of *program, class,* and method in an object-oriented language.
+
+**程序和指令架构**
+
+**一个虚拟机程序是一个或者多个.vm文件的集合。每个文件都包含一个或者多个函数。**
+
+**从编译的角度来看，这些结构分别对应面向对象语言的程序，类和方法的概念。**
+
+
+
+Within a .vm file, each VM command appears in a separate line, and in one of the following formats: *command* (e.g., add), *command arg* (e.g., goto loop), or command *arg1 arg2* (e.g., push local 3). The arguments are separated from each other and from the *command*part by an arbitrary number of spaces. “//” comments can appear at the end of any line and are ignored. Blank lines are permitted and ignored.
+
+**在vm文件内，每个虚拟机指令在分开的行出现，并且遵循下面的格式：**
+
+`指令 参数 参数`
+
+**参数各自分开。//符号可以在任何行位出现，并且编译的时候是忽略的。空行是允许的，也会被忽略。**
+
+
+
+## **7.2.2 Arithmetic and Logical Commands**
+
+**算数和逻辑指令。**
+
+The VM language features nine stack-oriented arithmetic and logical commands. Seven of these commands are binary: They pop two items off the stack, compute a binary function on them, and push the result back onto the stack. The remaining two commands are unary: they pop a single item off the stack, compute a unary function on it, and push the result back onto the stack. We see that each command has the net impact of replacing its operand(s) with the command’s result, without affecting the rest of the stack. Figure 7.5 gives the details.
+
+**虚拟机语言有九个基于堆栈的算数和逻辑指令。**
+
+**其中七个是二进制的：从堆栈POP元素，计算，PUSH回栈。**
+
+**剩余的2个指令是医院的，POP并计算，PUSH结果回栈**
+
+**我们可以发现，每个指令都有实际影响，用指令结果替换操作数而不影响堆栈的其余部分。**
+
+Three of the commands listed in figure 7.5 (eq, gt, lt) return Boolean values. The VM represents *true* and *false* as -1 (minus one, 0xFFFF) and 0 (zero, 0x0000), respectively.
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbmrwpav0bj30dq05k3yo.jpg)
+
+上图展示的指令中中间三行返回的是布尔类型。虚拟机将true和false分别表示为-1和0
+
+
+
+## **7.2.3 Memory Access Commands**
+
+So far in the chapter, memory access commands were illustrated using the pseudo-commands *pop* and *push x*, where the symbol *x* referred to an individual location in some global memory. Yet formally, our VM manipulates eight separate virtual memory segments, listed in figure 7.6.
+
+**到目前为止，存储访问指令我们使用了POP和PUSH X这样的伪指令展示过了。push X的符号X指向全局存储器中的某个位置。**
+
+**我们的虚拟机操作8个独立的存储器段，下图展示了。**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbmv1a5qpyj30dp0cu0tr.jpg)
+
+
+
+**Memory Access Commands** All the memory segments are accessed by the same two commands:
+
+> • push *segment index* Push the value of *segment*[*index*] onto the stack.
+
+> • pop *segment index* Pop the top stack value and store it in *segment*[*index*].
+
+**内存访问指令**
+
+**所有的存储段都依靠2个指令访问： PUSH和POP。**
+
+**push会将段落[index]的数据push到栈里。**
+
+**pop指令会将值pop出去，然后保存到segment[index]里面**
+
+
+
+Where *segment* is one of the eight segment names and index is a non-negative integer. For example, push argument 2 followed by pop local 1 will store the value of the function’s third argument in the function’s second local variable (each segment’s index starts at 0).
+
+**segment就是8个segment的名字，index是非负的整型。**
+
+**例如，push参数2，随后pop1，将会在函数第二个本地变量保存函数第三个参数的值。**
+
+The relationship among VM files, VM functions, and their respective virtual memory segments is depicted in figure 7.7.
+
+**虚拟机文件，函数和对应的虚拟存储段的关系将会在下图展示。**
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbmv2xwkbuj30dh0b93yv.jpg)
+
+In addition to the eight memory segments, which are managed explicitly by VM push and pop commands, the VM implementation manages two implicit data structures called *stack* and *heap*. These data structures are never mentioned directly, but their states change in the background, as a side effect of VM commands.
+
+**除了明确被虚拟机PUSH和POP等指令管理的八个内存段，虚拟器实现管理2个隐式数据结构堆和栈。**
+
+**这些数据结构从来没有被直接提到，但是他们后台状态改变是使用虚拟机指令的产物。**
+
+
+
+**The Stack** Consider the commands sequence push argument 2 and pop local 1, mentioned before. The working memory of such VM operations is the stack. The data value did not simply jump from one segment to another—it went through the stack. Yet in spite of its central role in the VM architecture, the stack proper is never mentioned in the VM language.
+
+**之前提到的，PUSH2POP本地1。这些虚拟机操作都是在栈进行的。**
+
+**数据并没有简单的从一个段跳到另一个，它直接去了栈。**
+
+**尽管它在虚拟机架构起核心作用，虚拟机语言并没有像样的提及。**
+
+ 
+
+**The Heap** Another memory element that exists in the VM’s background is the *heap*. The heap is the name of the RAM area dedicated for storing objects and arrays data. These objects and arrays can be manipulated by VM commands, as we will see shortly.
+
+**堆。另外一个存在虚拟机后台的存储元素就是堆。**
+
+**堆是RAM区域专用于存储对象和数组的数据结构。**
+
+**这些对象和数组可以被虚拟机指令操控，我们很快就可以看到。**
+
+
+
+## **7.2.4 Program Flow and Function Calling Commands**
+
+The VM features six additional commands that are discussed at length in the next chapter. For completeness, these commands are listed here.
+
+**虚拟机的6个额外的指令会在下个章节讨论到。为了完整，指令列在下方。**
+
+label
+
+goto
+
+if-go
+
+
+
+符号流指令有
+
+function 
+
+call
+
+return
+
+
+
+## **7.2.5 Program Elements in the Jack-VM-Hack Platform**
+
+**JACK虚拟机的程序元素**
+
+We end the first part of the VM specification with a top-down view of all the program elements that emerge from the full compilation of a typical high-level program. At the top of figure 7.8 we see a Jack program, consisting of two classes (Jack, a simple Java-like language, is described in chapter 9). Each Jack class consists of one or more methods. When the Jack compiler is applied to a directory that includes n class files, it produces n VM files (in the same directory). Each Jack method xxx within a class Yyy is translated into one *VM* *function* called Yyy.xxx within the corresponding VM file.
+
+![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbn2khaqjbj30dp0ab0sz.jpg)
