@@ -733,3 +733,31 @@ If the program’s argument is a directory name rather than a file name, the mai
 
 
 # ***\*7.4 Perspective\****
+
+In this chapter we began the process of developing a compiler for a high-level language. Following modern software engineering practices, we have chosen to base the compiler on a two-tier compilation model. In the frontend tier, covered in chapters 10 and 11, the high-level code is translated into an intermediate code, running on a virtual machine. In the backend tier, covered in this and in the next chapter, the intermediate code is translated into the machine language of a target hardware platform (see figures 7.1 and 7.9).
+
+The idea of formulating the intermediate code as the explicit language of a virtual machine goes back to the late 1970s, when it was used by several popular Pascal compilers. These compilers generated an intermediate “p-code” that could execute on any computer that implemented it. Following the wide spread use of the World Wide Web in the mid-1990s, cross-platform compatibility became a universally vexing issue. In order to address the problem, the Sun Microsystems company sought to develop a new programming language that could potentially run on any computer and digital device connected to the Internet. The language that emerged from this initiative—*Java*—is also founded on an intermediate code execution model called the Java Virtual Machine, on JVM.
+
+The JVM is a specification that describes an intermediate language called *byte-code*—the target language of Java compilers. Files written in bytecode are then used for dynamic code distribution of Java programs over the Internet, most notably as applets embedded in web pages. Of course in order to execute these programs, the client computers must be equipped with suitable JVM implementations. These programs, also called Java Run-time Environments (JREs), are widely available for numerous processor/OS combinations, including game consoles and cell phones.
+
+In the early 2000s, Microsoft entered the fray with its .NET infrastructure. The centerpiece of .NET is a virtual machine model called Common Language Runtime (CLR). According to the Microsoft vision, many programming languages (including C++, C#, Visual Basic, and J#—a Java variant) could be compiled into intermediate code running on the CLR. This enables code written in different languages to interoperate and share the software libraries of a common run-time environment.
+
+We note in closing that a crucial ingredient that must be added to the virtual machine model before its full potential of interoperability is unleashed is a common software library. Indeed the Java virtual machine comes with the standard Java libraries, and the Microsoft virtual machine comes with the Common Language Runtime. These software libraries can be viewed as small operating systems, providing the languages that run on top of the VM with unified services like memory management, GUI utilities, string functions, math functions, and so on. One such library will be described and built in chapter 12.
+
+**这段概览太长，我仔细看完后翻大意如下。**
+
+**1.这个章节我们开始开发高级语言编译器了，我们选择了2层编译模型。这个章节完成了第一个。**
+
+**2.中间代码这个思想1970年代就开始了。随着90年代互联网兴起，跨平台兼容变的棘手。**
+
+**由此导致了SUN公司开始开发新的语言，可以运行在互联网设备上。**
+
+**3.JVM是啥？JVM本质就是一个描述中间语言的标准。这个中间语言叫字节码。目标客户端需要装备有JVM实现，也叫JRES也就是JAVA的运行时环境。**
+
+**4.2000年早期的时候偶，微软开始玩.NET，他目标就是把c++C等语言编译成CLR，通用语言运行时。思路和SUN是一样的。这样的目的是不同语言编写的库可以共用，也就是interoperate地方的库。**
+
+**5.我们意识到，虚拟机器模型的关键要素就是通用软件库。JAM带有JAVA库，微软虚拟机带的是CLR。**
+
+**这些通用软件库可以被看成是操作系统。因为他们运行在VM上，有统一的服务例如内存管理，GUI，字符串函数，数学函数等。**
+
+**这样的库会在12章描述。**
