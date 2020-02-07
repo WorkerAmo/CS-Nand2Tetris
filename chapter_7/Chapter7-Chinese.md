@@ -453,3 +453,283 @@ return
 We end the first part of the VM specification with a top-down view of all the program elements that emerge from the full compilation of a typical high-level program. At the top of figure 7.8 we see a Jack program, consisting of two classes (Jack, a simple Java-like language, is described in chapter 9). Each Jack class consists of one or more methods. When the Jack compiler is applied to a directory that includes n class files, it produces n VM files (in the same directory). Each Jack method xxx within a class Yyy is translated into one *VM* *function* called Yyy.xxx within the corresponding VM file.
 
 ![](https://tva1.sinaimg.cn/large/006tNbRwgy1gbn2khaqjbj30dp0ab0sz.jpg)
+
+**我们用一张从上到下，涵盖完整边一部分和经典高级程序元素的图，去结束第一部分虚拟机描述。**
+
+**图顶部，我们可以看到JAVA程序，由2个Class组成。**
+
+**每个 JACK Class 由一个或者多个方法组成。**
+
+**当JACK编译器应用到了包含几个class文件的文件夹，它就会在同目录下产出对应的几个VM文件。**
+
+**每个yyy文件的 jack 语言的方法 xxx都会在对应的VM文件被翻译到VM函数   yyy.xxx 。**
+
+
+
+Next, the figure shows how the *VM translator* can be applied to the directory in which the VM files reside, generating a single assembly program. This assembly program does two main things. First, it emulates the virtual memory segments of each VM function and file, as well as the implicit stack. Second, it effects the VM commands on the target platform. This is done by manipulating the emulated VM data structures using machine language instructions—those translated from the VM commands. If all works well, that is, if the compiler and the VM translator and the assembler are implemented correctly, the target platform will end up effecting the behavior mandated by the original Jack program.
+
+**下面，图片展示了，VM翻译器是如何被引用到包含VM文件的路径的，通过生成一个简单的汇编程序。**
+
+**这个汇编器做2个主要的事情。**
+
+**第一，它模拟每个VM函数和文件的虚拟内存段以及隐式堆栈。**
+
+**第二，它影响目标平台的VM指令。**
+
+**这是通过操控使用机器指令模拟的VM数据结构实现的。**
+
+**如果一切正常，也就是说，如果编译器和虚拟机翻译器，VM转换器和汇编程序都被正确的执行，目标平台最终将影响被原始JACK程序要求的行为。**
+
+（这里翻译的怪怪的，第二轮优化下）
+
+
+
+## **7.2.6 VM Programming Examples**
+
+We end this section by illustrating how the VM abstraction can be used to express typical programming tasks found in high-level programs. 
+
+**我们用VM抽象如何被用于表达经典的高级程序任务的描述来结束本章。**
+
+We give three examples: (i) a typical arithmetic task, (ii) typical array handling, and (iii) typical object handling. These examples are irrelevant to the VM implementation, and in fact the entire section 7.2.6 can be skipped without losing the thread of the chapter.
+
+**三个范例：**
+
+**1.经典的算数任务**
+
+**2.经典的数组处理**
+
+**3.经典的对象处理**
+
+**这些案例和VM的实现相关，事实上，整个小节都可以被跳过，且你不会失去章节的主线。**
+
+
+
+The main purpose of this section is to illustrate how the compiler developed in chapters 10-11 will use the VM abstraction to translate high-level programs into VM code. Indeed, VM programs are rarely written by human programmers, but rather by compilers. Therefore, it is instructive to begin each example with a high-level code fragment, then show its equivalent representation using VM code. We use a C-style syntax for all the high-level examples.
+
+**本章节的主要目的是说明，10-11章节开发的编译器是如何使用VM抽象去翻译高级语言到虚拟机代码的。**
+
+**实际上，VM程序很少由人类编写，一般都是编译器处理的。**
+
+**因此，每个范例都带着高级语言代码片段然后再展示对应的VM代码表述，更有启发性。**
+
+**所有的高级语言范例，我们都是用C风格语法。**
+
+
+
+**A Typical Arithmetic Task** Consider the multiplication algorithm shown at the top of figure 7.9. How should we (or more likely, the compiler) express this algorithm in the VM language? 
+
+First, high-level structures like for and while must be rewritten using the VM’s simple “goto logic.” In a similar fashion, high-level arithmetic and Boolean operations must be expressed using stack-oriented commands. The resulting code is shown in figure 7.9. (The exact semantics of the VM commands function, label, goto, if-goto, and return are described in chapter 8, but their intuitive meaning is self-explanatory.)
+
+**一个经典的算术任务**
+
+**看图展示的乘法算法。我们怎么用VM语言展示这个算法？**
+
+**首先，for 和 while 这样的高级结构必须用VM的goto逻辑重写。**
+
+**以类似的方式，高级算数和布尔操作必须用基于堆栈的指令表述。**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnp9ku8f3j30gg0g2dgi.jpg)
+
+
+
+Let us focus on the virtual segments depicted at the bottom of figure 7.9. We see that when a VM function starts running, it assumes that (i) the stack is empty, (ii) the argument values on which it is supposed to operate are located in the argument segment, and (iii) the local variables that it is supposed to use are initialized to 0 and located in the local segment.
+
+**让我们专注于图示的虚拟片段。当VM函数开始运行的时候，它会假定堆栈是空的、要被操作的参数被保存在了参数段、要被使用的本地变量被初始化为0且被保存在本地段。**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnpn7oglbj30dr04ewei.jpg)
+
+Let us now focus on the VM representation of the algorithm. Recall that VM commands cannot use symbolic argument and variable names—they are limited to making 〈*segment index*〉 references only. However, the translation from the former to the latter is straightforward. All we have to do is map x, y, sum and j on argument 0, argument 1, local 0 and local 1, respectively, and replace all their symbolic occurrences in the pseudo code with corresponding 〈*segment index*〉 references.
+
+**下面我们看VM表述的算法。回想一下，VM指令不可以使用符号参数和变量名。他们仅限于使用段索引。**
+
+**但是，翻译过程是直接的。我们要做的就是定位X，Y，SUM，参数0的J，参数1，本地0，1，然后分别把他们在伪代码中的符号表现替换为对应的段索引。**
+
+
+
+To sum up, when a VM function starts running, it assumes that it is surrounded by a private world, all of its own, consisting of initialized argument and local segments and an empty stack, waiting to be manipulated by its commands. The agent responsible for staging this virtual worldview for every VM function just before it starts running is the VM implementation, as we will see in the next chapter.
+
+**总结一下，当VM函数开始运行，他会假设在一个私有的世界里。组成这个世界的是初始化过后的参数和本地段，与空栈，等到指令的操作。**
+
+**在程序运行之前，负责为每个VM函数暂存这个虚拟世界的代理人，就是虚拟机的实现。**
+
+（人话就是暂存这个私有空间的代理就是虚拟机。）
+
+
+
+**Array Handling** An array is an indexed collection of objects. Suppose that a high-level program has created an array of ten integers called bar and filled it with some ten numbers. Let us assume that the array’s base has been mapped (behind the scene) on RAM address 4315. Suppose now that the high-level program wants to execute the command bar[2]=19. How can we implement this operation at the VM level?
+
+**数组处理**
+
+**数组是序列化的一组对象。假设一个高级从横须已经创建了由10个整数组成的数组。然后我们假设数组的基址被定在了RAM地址4315。再假设，很高级程序希望之星指令 bar[2]=19。我们怎么用VM实现？**
+
+In the C language, such an operation can be also specified as *(bar+2)=19, meaning “*set* the RAM location whose address is (bar+2) to 19.” As shown in figure 7.10, this operation lends itself perfectly well to the VM language.
+
+**C语言里，这样的操作可以被指明为 (bar+2)=19。**
+
+**意思是将RAM地址为bar+2的值设为10。看下图有解释。**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnprznk3ej30gg0ft3za.jpg)
+
+
+
+It remains to be seen, of course, how a high-level command like bar [2]= 19 is translated in the first place into the VM code shown in figure 7.10. This transformation is described in section 11.1.1, when we discuss the code generation features of the compiler.
+
+
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnpuw2orij30gg0ef3zd.jpg)
+
+It follows that the VM designer can principally let programmers implement the VM on target platforms in any way they see fit. However, it is usually recommended that some guidelines be provided as to how the VM should map on the target platform, rather than leaving these decisions completely to the implementer’s discretion. These guidelines, called standard mapping, are provided for two reasons. First, they entail a public contract that regulates how VM-based programs can interact with programs produced by compilers that don’t use this VM (e.g., compilers that produce binary code directly). Second, we wish to allow the developers of the VM implementation to run standardized tests, namely, tests that conform to the standard mapping. This way, the tests and the software can be written by different people, which is always recommended. With that in mind, the remainder of this section specifies the standard mapping of the VM on a familiar hardware platform: the Hack computer.
+
+**因此，VM的设计者在原则上可以让程序员在目标平台上以他们认为合适的方式实现VM。**
+
+**但是，通常建议提供一些准则去描述VM应该如何映射到目标平台，而不是都交给开发者去实现。**
+
+**这些准则成为标准映射。有2个原因需要他**
+
+​		**首先，达成一个协议。协议规范了基于VM的程序如何与非此VM编译器生成的程序进行交流。（一些编译器直接生成二进制代码）**
+
+**第二，我们希望允许开发者运行标准化测试，即，符合标准化映射的测试。**
+
+**考虑到这一点，本节的其余部分指定了VM在熟悉的硬件平台上的标准映射：Hack计算机。**
+
+
+
+**VM to Hack Translation** Recall that a VM program is a collection of one or more .vm files, each containing one or more VM functions, each being a sequence of VM commands. The VM translator takes a collection of .vm files as input and produces a single Hack assembly language .asm file as output (see figure 7.7). Each VM command is translated by the VM translator into Hack assembly code. The order of the functions within the .vm files does not matter.
+
+**回想一下，VM程序是一个或者多个vm文件的集合。每个包含有一个或者多个vm函数，每个都是vm指令的序列。**
+
+**vm翻译器将一组vm文件作为输入，然后输出单独的HACK汇编语言.asm文件作为输出。**
+
+**每个VM指令都会被VM编译器翻译为HACK汇编代码。vm文件函数的顺序不重要。**
+
+
+
+**RAM Usage** The data memory of the Hack computer consists of 32K 16-bit words. The first 16K serve as general-purpose RAM. The next 16K contain memory maps of I/O devices. The VM implementation should use this space as follows:
+
+**HACK计算机的数据内存有32K。前16K作为一般RAM。后面的16K作为I/O映射。VM实现遵循下面的图**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnq963n1kj30dh03074a.jpg)
+
+Recall that according to the Hack Machine Language Specification, RAM addresses 0 to 15 can be referred to by any assembly program using the symbols R0 to R15, respectively. In addition, the specification states that assembly programs can refer to RAM addresses 0 to 4 (i.e., R0 to R4) using the symbols SP, LCL, ARG, THIS, and THAT. This convention was introduced into the assembly language with foresight, in order to promote readable VM implementations. The expected use of these registers in the VM context is described as follows:
+
+**根据HACK机器语言规范。RAM的0 ~ 15都可以被任何汇编程序分别使用符号 R0 ~ R15**
+
+**此外，规范说了，汇编程序可以使用SP，LCL等指向R 0~R4**
+
+**为了促进可读的VM实现，这个惯例被有预见性地引入了**
+
+**这些寄存器再VM上下文预期用途描述如下：**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnq9m7833j30dk06zdg6.jpg)
+
+**Memory Segments Mapping**
+
+local, argument, this, that: Each one of these segments is mapped directly on the RAM, and its location is maintained by keeping its physical base address in a dedicated register (LCL, ARG, THIS, and THAT, respectively). Thus any access to the *i*th entry of any one of these segments should be translated to assembly code that accesses address (*base* + i) in the RAM, where base is the current value stored in the register dedicated to the respective segment.
+
+**local(LCL)，THIS等都被直接映射到RAM中，通过在专用寄存器（LCLTHISARGTAHT）里保存物理地址来维护。**
+
+**任何试图访问i片段的操作都应该被翻译成基于RAM中对应地址的汇编码(base + i)**
+
+
+
+pointer, temp: These segments are each mapped directly onto a fixed area in the RAM. The pointer segment is mapped on RAM locations 3-4 (also called THIS and THAT) and the temp segment on locations 5-12 (also called R5, R6,..., R12). Thus access to pointer i should be translated to assembly code that accesses RAM location 3 + *i*, and access to temp i should be translated to assembly code that accesses RAM location 5 + i. 
+
+**pointer, temp这样的片段都被直接直接映射到了RAM的区域。**
+
+**pointer被映射到RAM地址为3~4的地方。（THIS和THAT）**
+
+**TEMP被映射到R5~R12。这意味着如果你要访问pointer只要base+3+i如果是temp就是base+5+i**
+
+
+
+constant: This segment is truly virtual, as it does not occupy any physical space on the target architecture. Instead, the VM implementation handles any VM access to 〈*constant i*〉 by simply supplying the constant i.
+
+**关于constant。这个是完全虚拟的。不占用目标架构上的任何物理空间。**
+
+**事实上，VM实现的方式是直接使用i来提供访问。（可能要看代码才能懂）**
+
+static: According to the Hack machine language specification, when a new symbol is encountered for the first time in an assembly program, the assembler allocates a new RAM address to it, starting at address 16. This convention can be exploited to represent each static variable number j in a VM file f as the assembly language symbol f.j. For example, suppose that the file Xxx.vm contains the command push static 3. This command can be translated to the Hack assembly commands@Xxx.3 and D=M, followed by additional assembly code that pushes D’s value to the stack. This implementation of the static segment is somewhat tricky, but it works.
+
+**静态部分**
+
+**根据HACK机器语言规范。在汇编成语遇到新符号的时候，汇编器分配新的RAM地址给它，从地址16开始。**
+
+**这个协议可以被利用于表现VM文件f每个静态变量j作为汇编语言符号f.j**
+
+**例如，假设文件Xxx.vm包含指令，PUSH静态3.**
+
+**这个指令可以被翻译成HACK汇编指令@Xxx.3 D=M，紧接着是额外的汇编代码PUSH D值到堆栈。**
+
+**这个静态段的实现有点trick意味，就是抖机灵那种，但是可行。**
+
+
+
+**Assembly Language Symbols** We recap all the assembly language symbols used by VM implementations that conform to the standard mapping.
+
+**汇编语言符号**
+
+**我们概括了符合映射标准的所有使用VM实现的汇编语言符号。**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnqwjwb9oj30c906tq3b.jpg)
+
+
+
+## **7.3.2 Design Suggestion for the VM Implementation**
+
+**设计建议**
+
+The VM translator should accept a single command line parameter, as follows:
+
+prompt> VMtranslator source
+
+**VM翻译器应该支持 命令行参数**
+
+`prompt> VMtranslator source`
+
+Where *source* is either a file name of the form Xxx.vm (the extension is mandatory) or a directory name containing one or more .vm files (in which case there is no extension). The result of the translation is always a single assembly language file named Xxx.asm, created in the same directory as the input Xxx. The translated code must conform to the standard VM mapping on the Hack platform.
+
+**source可以是后缀带有.vm的文件名或者是保存有多个vm文件的路径（这情况下是不带后缀的）。**
+
+**翻译的结果永远是一个单一的汇编语言文件Xxx.asm，和输入文件在一个路径下。翻译代码必须符合标准HACK平台VM映射标准**
+
+
+
+## **7.3.3 Program Structure**
+
+**程序架构**
+
+We propose implementing the VM translator using a main program and two modules: parser and *code writer.*
+
+**只要2个模组，parser和code writer。**
+
+**The \*Parser\* Module**
+
+**Parser:** Handles the parsing of a single .vm file, and encapsulates access to the input code. It reads VM commands, parses them, and provides convenient access to their components. In addition, it removes all white space and comments.
+
+**分析模组处理分析单个vm文件的工作。并且封装输入代码访问。**
+
+**读代码指令，解析他们，提供访问他们元素入口。此外，删除所有的注释和空格。**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnr167689j30dp0eidgg.jpg)
+
+
+
+**The** **Code Writer** **Module**
+
+**CodeWriter:** Translates VM commands into Hack assembly code.
+
+**写码器的作用是吧VM代码转为HACK汇编代码（第六章是吧汇编码写成二进制）**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnr3i711yj30dp0a8mxm.jpg)
+
+**Main Program** The main program should construct a Parser to parse the VM input file and a CodeWriter to generate code into the corresponding output file. It should then march through the VM commands in the input file and generate assembly code for each one of them.
+
+If the program’s argument is a directory name rather than a file name, the main program should process all the .vm files in this directory. In doing so, it should use a separate Parser for handling each input file and a single CodeWriter for handling the output.
+
+**主程序构造解析器去解析。生成代码到对应的输出文件。遍历VM文件指令，输出为对应的汇编代码。**
+
+**如果程序参数不止一个文件，主程序应该处理所有的vm文件。这样的话，应该使用分别独立的解析器处理每个输入文件，然后用一个单独的写码器处理输出。**
+
+
+
+# ***\*7.4 Perspective\****
