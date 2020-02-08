@@ -72,7 +72,9 @@ public class Parser {
             commandLine=commandLine.replaceAll("@","");
 
             // Integer.valueOf(commandLine) == null && 这里要处理纯数字的情况
-            if (!table.containsSymbol(commandLine)) {
+            // 无法适用于Rect.asm的BUG出自这里，没有处理好纯数字的情况。这里纯数字应该直接不执行的。
+            boolean isNumber = commandLine.matches("[0-9]+");
+            if (!table.containsSymbol(commandLine) && !isNumber) {
                 // 条件都不满足意味着 table 内是没有的，得加
                 table.addEntry(commandLine, tableIndex);
                 this.tableIndex++;
@@ -131,5 +133,4 @@ public class Parser {
         read.close();
         return linesList;
     }
-
 }
