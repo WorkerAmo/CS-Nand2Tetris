@@ -530,6 +530,18 @@ First, high-level structures like for and while must be rewritten using the VM�
 
 ![](https://tva1.sinaimg.cn/large/0082zybpgy1gbnp9ku8f3j30gg0g2dgi.jpg)
 
+**补充，看懂这部分很重要：**
+
+第一步 是从 first approximation 到 pseudo VM Code 
+
+ https://1drv.ms/u/s!An_6yvF4LrWVihqyRgBEOW02oK_Y
+
+第二部是结合内存分配，看FinalVMCode
+
+
+
+
+
 
 
 Let us focus on the virtual segments depicted at the bottom of figure 7.9. We see that when a VM function starts running, it assumes that (i) the stack is empty, (ii) the argument values on which it is supposed to operate are located in the argument segment, and (iii) the local variables that it is supposed to use are initialized to 0 and located in the local segment.

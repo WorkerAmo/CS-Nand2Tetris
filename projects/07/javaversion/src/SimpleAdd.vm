@@ -5,5 +5,11 @@
 
 // Pushes and adds two constants.
 push constant 7
-push constant 8
-add
+
+##  @7
+##  D=A   D = 7（如果7不是7.是i的话，A就应该是M了）
+##  @SP
+##  A=M   SP指向一块内存？
+##  M=D   内存值为D保存的7
+##  @SP
+##  M=M+1 SP 地址+1

@@ -219,6 +219,206 @@ Some of the implementation details are rather technical, and dwelling on them ma
 
 **全局堆栈VM的内存资源是通过维护全局堆栈来实现的。 每次调用函数时，都会向全局堆栈中添加一个新块。 该块由为调用函数设置的参数，用于保存调用函数状态的一组指针，被调用函数的局部变量（初始化为0）以及被调用函数的空工作堆栈组成 。 图8.4显示了这种通用堆栈结构。**
 
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbsl1kspyij30cj0cm3yu.jpg)
+
+
+
+How can we implement this model on the Hack platform? Recall that the standard mapping specifies that the stack should start at RAM address 256, meaning that the VM implementation can start by generating assembly code that sets SP=256. From this point onward, when the VM implementation encounters commands like pop, push, add, and so forth, it can emit assembly code that effects these operations by manipulating SP and relevant words in the host RAM. All this was already done in chapter 7. Likewise, when the VM implementation encounters commands like call, function, and return, it can emit assembly code that maintains the stack structure shown in figure 8.4 on the host RAM. This code is described next.
+
+**我们如何在Hack平台上实现这个模型呢？**
+
+**回想下标准映射规范。栈起始地址为256，意味着VM的实现通过设置sp为256实现。**
+
+**从这点儿开始，当VM实现遇到类似POP，PUSHADD等指令，它可以输出通过操作主RAM内SP和相关字段实现这些操作汇编代码。**
+
+**第七章我们都已经完成了。**
+
+**如果遇到CALLFUNTION和RETURN，它可以输出维护栈结构的汇编代码。**
+
+
+
+**Function Calling Protocol Implementation** The function calling protocol and the global stack structure implied by it can be implemented on the Hack platform by effecting (in Hack assembly) the pseudo-code given in figure 8.5.
+
+Recall that the VM implementation is a translator program, written in some high-level language. It accepts VM code as input and emits assembly code as output. Hence, each pseudo-operation described in the right column of figure 8.5 is actually implemented by emitting assembly language instructions. Note that some of these “instructions” entail planting label declarations in the generated code stream.
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbslwzff8pj30go0c00tr.jpg)
+
+
+
+**实现上面图的伪代码，就可以实现函数调用协议和全局栈结构。**
+
+
+
+**分析：**
+
+call of n 里，LCL和SP一开始是同起点的。顶部的ARG区和SAVED区域是固定要分配好的。也作为LCL和SP的起点。
+
+SAVED区域的第一个是保存的return。return理论上应该保存的是调用处下一个指令的地址。
+
+
+
+**Assembly Language Symbols** As we have seen earlier, the implementation of program flow and function calling commands requires the VM implementation to create and use special symbols at the assembly level. These symbols are summarized in figure 8.6. For completeness of presentation, the first three rows of the table document the symbols described and implemented in chapter 7.
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbsmuiwcfbj30do0cogmo.jpg)
+
+如我们先前所见，程序流和函数调用命令的实现要求VM实现在汇编级别创建和使用特殊符号。 这些符号总结在图8.6中。 为了表示完整，表的前三行记录了第7章中描述和实现的符号。
+
+
+
+**Bootstrap Code** When applied to a VM program (a collection of one or more .vm files), the VM-to-Hack translator produces a single .asm file, written in the Hack assembly language. This file must conform to certain conventions. Specifically, the standard mapping specifies that (i) the VM stack should be mapped on location RAM[256] onward, and (ii) the first VM function that starts executing should be Sys.init (see section 8.2.4).
+
+**引导程序代码当应用于VM程序（一个或多个.vm文件的集合）时，VM-to-Hack转换程序会生成一个用Hack汇编语言编写的.asm文件。 该文件必须符合某些约定。 具体而言，标准映射指定（i）VM堆栈应向前映射到位置RAM [256]上，并且（ii）开始执行的第一个VM函数应为Sys.init（请参阅第8.2.4节）。**
+
+How can we effect this initialization in the .asm file produced by the VM translator? Well, when we built the Hack computer hardware in chapter 5, we wired it in such a way that upon reset, it will fetch and execute the word located in ROM[0]. Thus, the code segment that starts at ROM address 0, called bootstrap code, is the first thing that gets executed when the computer “boots up.” Therefore, in view of the previous paragraph, the computer’s bootstrap code should effect the following operations (in machine language):
+
+**我们如何在VM转换器生成的.asm文件中实现这种初始化？ 好了，当我们在第5章中构建了Hack计算机硬件时，我们以一种方式对其进行了连接，以使其在重置时将提取并执行位于ROM [0]中的字。 因此，从ROM地址0开始的代码段（称为引导程序代码）是计算机“启动”时执行的第一件事。因此，鉴于上一段，计算机的引导程序代码应影响以下操作（ 用机器语言）：**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbsmv75cajj30d900wglg.jpg)
+
+Sys.init is then expected to call the main function of the main program and then enter an infinite loop. This action should cause the translated VM program to start running.
+
+**然后期望Sys.init调用主程序的主函数，然后进入无限循环。 此操作应导致已转换的VM程序开始运行。**
+
+The notions of “program,” “main program,” and “main function” are compilation-specific and vary from one high-level language to another. For example, in the Jack language, the default is that the first program unit that starts running automatically is the main method of a class named Main. In a similar fashion, when we tell the JVM to execute a given Java class, say Foo, it looks for, and executes, the Foo.main method. Each language compiler can effect such “automatic” startup routines by programming Sys.init appropriately.
+
+**“程序”，“主程序”和“主功能”的概念是特定于编译的，并且从一种高级语言到另一种高级语言都不同。 例如，在杰克语言中，默认值是第一个自动开始运行的程序单元是名为Main的类的main方法。 以类似的方式，当我们告诉JVM执行给定的Java类（例如Foo）时，它将查找并执行Foo.main方法。 每个语言编译器都可以通过对Sys.init进行适当的编程来实现这种“自动”启动例程。**
+
+
+
+## **8.3.2 Example**
+
+The factorial of a positive number n can be computed by the iterative formula n! = 1 ·2·... ·(*n* - 1) · *n*. This algorithm is implemented in figure 8.7.
+
+**正数n的阶乘可以通过迭代公式n！ = 1·2·...·（n-1）·n。 该算法在图8.7中实现。**
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbspugbr4zj30gg0hxjs6.jpg)
+
+Let us focus on the call mult command highlighted in the fact function code from figure 8.7. Figure 8.8 shows three stack states related to this call, illustrating the function calling protocol in action.
+
+**让我们关注图8.7的事实功能代码中突出显示的call mult命令。 图8.8显示了与此调用有关的三种堆栈状态，说明了正在使用的函数调用协议。**
+
+If we ignore the middle stack instance in figure 8.8, we observe that fact has set up some arguments and called mult to operate on them (left stack instance). When mult returns (right stack instance), the arguments of the called function have been replaced with the function’s return value. In other words, when the dust clears from the function call, the calling function has received the service that it has requested, and processing resumes as if nothing happened: The drama of mult’s processing (middle stack instance) has left no trace whatsoever on the stack, except for the return value.
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbsq0wnydqj30ew0gfq3k.jpg)
+
+
+
+**如果我们忽略图8.8中的中间堆栈实例，则会观察到事实已经设置了一些参数并调用了mult对其进行操作（左侧堆栈实例）。 当mult返回（右堆栈实例）时，被调用函数的参数已被该函数的返回值替换。 换句话说，当清除函数调用中的灰尘时，调用函数已接收到它所请求的服务，并且处理继续进行，就好像什么都没有发生：多重处理（中间堆栈实例）的过程在程序上没有留下任何痕迹。 堆栈，除了返回值。**
+
+
+
+## **8.3.3 Design Suggestions for the VM Implementation**
+
+The basic VM translator built in Project 7 was based on two modules: parser and code writer. This translator can be extended into a full-scale VM implementation by extending these modules with the functionality described here.
+
+ 
+
+**The \*Parser\* Module** If the basic parser that you built in Project 7 does not already parse the six VM commands specified in this chapter, then add their parsing now. Specifically, make sure that the commandType method developed in Project 7 also returns the constants corresponding to the six VM commands described in this chapter: C_LABEL, C_GOTO, C_IF, C_FUNCTION, C_RETURN, and C_CALL.
+
+ 
+
+**The** ***CodeWriter*** **Module** The basic CodeWriter specified in chapter 7 should be augmented with the following methods.
+
+ 
+
+**CodeWriter:** Translates VM commands into Hack assembly code. The routines listed here should be added to the CodeWriter module API given in chapter 7.
+
+
+
+![](https://tva1.sinaimg.cn/large/0082zybpgy1gbstjhghc3j30dp07pgls.jpg)
+
+
+
+
+
+
+
+# ***\*8.4 Perspective\****
+
+The notions of subroutine calling and program flow are fundamental to all high-level languages. This means that somewhere down the translation path to binary code, someone must take care of the intricate housekeeping chores related to their implementation. In Java, C#, and Jack, this burden falls on the VM level. And if the VM is stack-based, it lends itself nicely to the job, as we have seen throughout this chapter. In general then, virtual machines that implement subroutine calls and recursion as a primitive feature deliver a significant and useful abstraction.
+
+Of course this is just one implementation option. Some compilers handle the details of subroutine calling directly, without using a VM at all. Other compilers use various forms of VMs, but not necessarily for managing subroutine calling. Finally, in some architectures most of the subroutine calling functionality is handled directly by the hardware.
+
+In the next two chapters we will develop a Jack-to-VM compiler. Since the back-end of this compiler was already developed—it is the VM implementation built in chapters 7-8—the compiler’s development will be a relatively easy task.
+
+
+
+# ***\*8.5 Project\****
+
+**Objective** Extend the basic VM translator built in Project 7 into a full-scale VM translator. In particular, add the ability to handle the program flow and function calling commands of the VM language.
+
+ 
+
+**Resources** (same as Project 7) You will need two tools: the programming language in which you will implement your VM translator, and the CPU emulator supplied with the book. This emulator will allow you to execute the machine code generated by your VM translator—an indirect way to test the correctness of the latter. Another tool that may come in handy in this project is the visual VM emulator supplied with the book. This program allows experimenting with a working VM implementation before you set out to build one yourself. For more information about this tool, refer to the VM emulator tutorial.
+
+ 
+
+**Contract** Write a full-scale VM-to-Hack translator, extending the translator developed in Project 7, and conforming to the VM Specification, Part II (section 8.2) and to the Standard VM Mapping on the Hack Platform (section 8.3.1). Use it to translate the VM programs supplied below, yielding corresponding programs written in the Hack assembly language. When executed on the supplied CPU emulator, these assembly programs should deliver the results mandated by the supplied test scripts and compare files.
+
+ 
+
+**Testing Programs**
+
+ 
+
+We recommend completing the implementation of the translator in two stages. First implement the program flow commands, then the function calling commands. This will allow you to unit-test your implementation incrementally, using the test programs supplied here.
+
+For each program Xxx, the XxxVME.tst script allows running the program on the supplied VM emulator, so that you can gain familiarity with the program’s intended operation. After translating the program using your VM translator, the supplied Xxx.tst and Xxx.cmp scripts allow testing the translated assembly code on the CPU emulator.
+
+**Test Programs for Program Flow Commands**
+
+■ BasicLoop: computes 1 + 2 + ··· + *n* and pushes the result onto the stack. This program tests the implementation of the VM language’s goto and if-goto commands.
+
+■ Fibonacci: computes and stores in memory the first n elements of the Fibonacci series. This typical array manipulation program provides a more challenging test of the VM’s branching commands.
+
+ 
+
+**Test Programs for Function Calling Commands**
+
+■ SimpleFunction: performs a simple calculation and returns the result. This program provides a basic test of the implementation of the function and return commands.
+
+■ FibonacciElement: This program provides a full test of the implementation of the VM’s function calling commands, the bootstrap section, and most of the other VM commands.
+
+The program directory consists of two .vm files:
+
+● Main.vm contains one function called fibonacci. This recursive function returns the *n*-th element of the Fibonacci series;
+
+● Sys.vm contains one function called init. This function calls the Main.fibonacci function with *n* = 4, then loops infinitely.
+
+Since the overall program consists of two .vm files, the entire directory must be compiled in order to produce a single FibonacciElement.asm file. (compiling each ● vm file separately will yield two separate .asm files, which is not desired here).
+
+■ StaticsTest: A full test of the VM implementation’s handling of static variables. Consists of two .vm files, each representing the compilation of a stand-alone class file, plus a Sys.vm file. The entire directory should be compiled in order to produce a single StaticsTest.asm file.
+
+ 
+
+(Recall that according to the VM Specification, the bootstrap code generated by the VM implementation must include a call to the Sys.init function).
+
+ 
+
+**Tips**
+
+ 
+
+**Initialization** In order for any translated VM program to start running, it must include a preamble startup code that forces the VM implementation to start executing it on the host platform. In addition, in order for any VM code to operate properly, the VM implementation must store the base addresses of the virtual segments in selected locations in the host RAM. The first three test programs in this project assume that the startup code was not yet implemented and include test scripts that effect the necessary initializations “manually.” The last two programs assume that the startup code is already part of the VM implementation.
+
+ 
+
+**Testing/Debugging** For each one of the five test programs, follow these steps:
+
+\1. Run the program on the supplied VM emulator, using the XxxVME.tst test script, to get acquainted with the intended program’s behavior.
+
+\2. Use your partial translator to translate the .vm file(s), yielding a single .asm text file that contains a translated program written in the Hack assembly language.
+
+\3. Inspect the translated .asm program. If there are visible syntax (or any other) errors, debug and fix your translator.
+
+\4. Use the supplied .tst and .cmp files to run your translated .asm program on the CPU emulator. If there are run-time errors, debug and fix your translator.
+
+Note: The supplied test programs were carefully planned to unit-test the specific features of each stage in your VM implementation. Therefore, it’s important to implement your translator in the proposed order and to test it using the appropriate test programs at each stage. Implementing a later stage before an early one may cause the test programs to fail.
+
+ 
+
+**Tools** Same as in Project 7.
+
 
 
 
