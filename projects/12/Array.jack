@@ -11,6 +11,7 @@
  * well as any object type. Different array entries can have different 
  * data types.
  */
+ 
 class Array {
 
     /** Constructs a new Array of the given size. */
